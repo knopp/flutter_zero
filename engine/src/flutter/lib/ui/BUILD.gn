@@ -1,0 +1,134 @@
+# Copyright 2013 The Flutter Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//flutter/common/config.gni")
+import("//flutter/shell/config.gni")
+import("//flutter/testing/testing.gni")
+
+if (is_fuchsia) {
+  import("//flutter/tools/fuchsia/gn-sdk/src/gn_configs.gni")
+}
+
+source_set("ui") {
+  cflags = [
+    # Dart gives us doubles. Skia and Impeller work in floats.
+    # If Dart gives us a double > FLT_MAX or < -FLT_MAX, implicit conversion
+    # will convert it to either inf/-inf or FLT_MAX/-FLT_MAX (undefined
+    # behavior). This can result in surprising and difficult to debug behavior
+    # for Flutter application developers, so it should be explicitly handled
+    # via SafeNarrow.
+    "-Wimplicit-float-conversion",
+  ]
+
+  if (is_win) {
+    # This causes build failures in third_party dependencies on Windows.
+    cflags += [ "-Wno-implicit-int-float-conversion" ]
+  }
+
+  sources = [
+    "dart_runtime_hooks.cc",
+    "dart_runtime_hooks.h",
+    "dart_ui.cc",
+    "dart_ui.h",
+    "dart_wrapper.h",
+    "floating_point.h",
+    "isolate_name_server/isolate_name_server.cc",
+    "isolate_name_server/isolate_name_server.h",
+    "isolate_name_server/isolate_name_server_natives.cc",
+    "isolate_name_server/isolate_name_server_natives.h",
+    "painting/immutable_buffer.cc",
+    "painting/immutable_buffer.h",
+    "plugins/callback_cache.cc",
+    "plugins/callback_cache.h",
+    "ui_dart_state.cc",
+    "ui_dart_state.h",
+    "window/platform_configuration.cc",
+    "window/platform_configuration.h",
+    "window/platform_message.cc",
+    "window/platform_message.h",
+    "window/platform_message_response.cc",
+    "window/platform_message_response.h",
+    "window/platform_message_response_dart.cc",
+    "window/platform_message_response_dart.h",
+    "window/platform_message_response_dart_port.cc",
+    "window/platform_message_response_dart_port.h",
+  ]
+
+  public_configs = [ "//flutter:config" ]
+
+  public_deps = [ "//flutter/shell/common:platform_message_handler" ]
+
+  deps = [
+    "$dart_src/runtime/bin:common_embedder_dart_io",
+    "//flutter/assets",
+    "//flutter/common",
+    "//flutter/fml",
+    "//flutter/runtime:dart_plugin_registrant",
+    "//flutter/third_party/rapidjson",
+    "//flutter/third_party/tonic",
+    "//third_party/abseil-cpp/absl/status:statusor",
+    "//third_party/zlib",
+  ]
+
+  if (!defined(defines)) {
+    defines = []
+  }
+  if (is_win) {
+    # Required for M_PI and others.
+    defines += [ "_USE_MATH_DEFINES" ]
+  }
+}
+
+if (enable_unittests) {
+  test_fixtures("ui_unittests_fixtures") {
+    dart_main = "fixtures/ui_test.dart"
+    fixtures = [
+      "fixtures/DashInNooglerHat.jpg",
+      "fixtures/DashInNooglerHat%20WithSpace.jpg",
+    ]
+  }
+
+  executable("ui_benchmarks") {
+    testonly = true
+
+    public_configs = [ "//flutter:export_dynamic_symbols" ]
+
+    sources = [ "ui_benchmarks.cc" ]
+
+    deps = [
+      ":ui",
+      ":ui_unittests_fixtures",
+      "//flutter/benchmarking",
+      "//flutter/lib/snapshot",
+      "//flutter/shell/common",
+      "//flutter/testing:fixture_test",
+    ]
+  }
+
+  executable("ui_unittests") {
+    testonly = true
+
+    public_configs = [ "//flutter:export_dynamic_symbols" ]
+
+    sources = [
+      "hooks_unittests.cc",
+      "window/platform_configuration_unittests.cc",
+      "window/platform_message_response_dart_port_unittests.cc",
+      "window/platform_message_response_dart_unittests.cc",
+    ]
+
+    deps = [
+      ":ui",
+      ":ui_unittests_fixtures",
+      "$dart_src/runtime/bin:elf_loader",
+      "//flutter/common",
+      "//flutter/lib/snapshot",
+      "//flutter/shell/common:shell_test_fixture_sources",
+      "//flutter/testing",
+      "//flutter/testing:dart",
+      "//flutter/testing:fixture_test",
+      "//flutter/third_party/tonic",
+    ]
+  }
+}

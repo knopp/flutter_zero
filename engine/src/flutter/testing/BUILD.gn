@@ -1,0 +1,144 @@
+# Copyright 2013 The Flutter Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//flutter/common/config.gni")
+import("//flutter/shell/config.gni")
+import("testing.gni")
+
+config("dynamic_symbols") {
+  if (is_clang && is_linux) {
+    ldflags = [ "-rdynamic" ]
+  }
+}
+
+source_set("testing_lib") {
+  testonly = true
+
+  sources = [
+    "assertions.h",
+    "debugger_detection.cc",
+    "debugger_detection.h",
+    "logger_listener.cc",
+    "logger_listener.h",
+    "post_task_sync.cc",
+    "post_task_sync.h",
+    "stream_capture.cc",
+    "stream_capture.h",
+    "test_args.cc",
+    "test_args.h",
+    "test_timeout_listener.cc",
+    "test_timeout_listener.h",
+    "testing.cc",
+    "testing.h",
+    "thread_test.cc",
+    "thread_test.h",
+  ]
+
+  public_deps = [
+    "//flutter/fml",
+    "//flutter/third_party/googletest:gmock",
+    "//flutter/third_party/googletest:gtest",
+  ]
+  public_configs = [ "//flutter:config" ]
+}
+
+source_set("testing") {
+  testonly = true
+
+  sources = [ "run_all_unittests.cc" ]
+
+  if (enable_unittests && is_linux) {
+    # So that we can call gtk_init in main().
+    configs += [ "//flutter/shell/platform/linux/config:gtk" ]
+  }
+
+  public_deps = [ ":testing_lib" ]
+  public_configs = [ ":dynamic_symbols" ]
+}
+
+source_set("dart") {
+  testonly = true
+
+  sources = [
+    "dart_isolate_runner.cc",
+    "dart_isolate_runner.h",
+    "elf_loader.cc",
+    "elf_loader.h",
+    "test_dart_native_resolver.cc",
+    "test_dart_native_resolver.h",
+  ]
+
+  public_deps = [
+    ":testing_lib",
+    "$dart_src/runtime/bin:elf_loader",
+    "//flutter/common",
+    "//flutter/runtime",
+    "//flutter/runtime:libdart",
+    "//flutter/third_party/tonic",
+  ]
+}
+
+dart_snapshot_kernel("vmservice_kernel") {
+  dart_main = "//flutter/shell/vmservice/empty.dart"
+  dart_kernel = "$target_gen_dir/assets/vmservice_kernel.bin"
+}
+
+dart_snapshot_aot("vmservice_snapshot") {
+  dart_kernel = "$target_gen_dir/assets/vmservice_kernel.bin"
+  dart_elf_filename = "libvmservice_snapshot.so"
+  deps = [ ":vmservice_kernel" ]
+}
+
+source_set("fixture_test") {
+  testonly = true
+
+  sources = [
+    "dart_fixture.cc",
+    "dart_fixture.h",
+    "fixture_test.cc",
+    "fixture_test.h",
+  ]
+
+  public_deps = [
+    ":dart",
+    "//flutter/common",
+    "//flutter/runtime",
+  ]
+
+  if (flutter_runtime_mode == "profile") {
+    public_deps += [ ":vmservice_snapshot" ]
+  }
+}
+
+if (is_mac || is_ios) {
+  source_set("autoreleasepool_test") {
+    testonly = true
+
+    sources = [ "autoreleasepool_test.h" ]
+
+    deps = [
+      "//flutter/fml",
+      "//flutter/third_party/googletest:gtest",
+    ]
+  }
+}
+
+if (enable_unittests) {
+  test_fixtures("testing_fixtures") {
+    fixtures = []
+  }
+}
+
+if (enable_unittests) {
+  executable("testing_unittests") {
+    testonly = true
+
+    sources = []
+    deps = [
+      ":testing_fixtures",
+      "//flutter/third_party/googletest:gtest",
+      "//flutter/third_party/googletest:gtest_main",
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+# Copyright 2013 The Flutter Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//flutter/build/dart/rules.gni")
+
+tests = [
+  "assets_test.dart",
+  "channel_buffers_test.dart",
+  "dart_test.dart",
+  "geometry_test.dart",
+  "http_allow_http_connections_test.dart",
+  "http_disallow_http_connections_test.dart",
+  "isolate_name_server_test.dart",
+  "isolate_test.dart",
+  "lerp_test.dart",
+  "locale_test.dart",
+  "plugin_utilities_test.dart",
+  "serial_gc_test.dart",
+  "spawn_helper.dart",
+  "spawn_test.dart",
+  "task_order_test.dart",
+  "window_test.dart",
+]
+
+foreach(test, tests) {
+  flutter_build_dir = rebase_path("$root_gen_dir")
+  flutter_src_dir = rebase_path("//flutter")
+  flutter_frontend_server("compile_$test") {
+    main_dart = test
+    kernel_output = "$root_gen_dir/$test.dill"
+    extra_args = [
+      "-DkFlutterSrcDirectory=$flutter_src_dir",
+      "-DkFlutterBuildDirectory=$flutter_build_dir",
+    ]
+    testonly = true
+  }
+}
+
+group("dart") {
+  testonly = true
+  deps = [ "//flutter/testing/dart/vm_service" ]
+  foreach(test, tests) {
+    deps += [ ":compile_$test" ]
+  }
+}

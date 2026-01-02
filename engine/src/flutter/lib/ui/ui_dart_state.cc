@@ -1,0 +1,191 @@
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "flutter/lib/ui/ui_dart_state.h"
+
+#include <utility>
+
+#include "flutter/lib/ui/window/platform_configuration.h"
+#include "flutter/lib/ui/window/platform_message.h"
+#include "third_party/tonic/converter/dart_converter.h"
+#include "third_party/tonic/dart_message_handler.h"
+
+using tonic::ToDart;
+
+namespace flutter {
+
+UIDartState::Context::Context(const TaskRunners& task_runners)
+    : task_runners(task_runners) {}
+
+UIDartState::Context::Context(
+    const TaskRunners& task_runners,
+    std::string advisory_script_uri,
+    std::string advisory_script_entrypoint,
+    std::shared_ptr<fml::ConcurrentTaskRunner> concurrent_task_runner)
+    : task_runners(task_runners),
+      advisory_script_uri(std::move(advisory_script_uri)),
+      advisory_script_entrypoint(std::move(advisory_script_entrypoint)),
+      concurrent_task_runner(std::move(concurrent_task_runner)) {}
+
+UIDartState::UIDartState(
+    TaskObserverAdd add_callback,
+    TaskObserverRemove remove_callback,
+    std::string logger_prefix,
+    UnhandledExceptionCallback unhandled_exception_callback,
+    LogMessageCallback log_message_callback,
+    std::shared_ptr<IsolateNameServer> isolate_name_server,
+    bool is_root_isolate,
+    const UIDartState::Context& context)
+    : add_callback_(std::move(add_callback)),
+      remove_callback_(std::move(remove_callback)),
+      logger_prefix_(std::move(logger_prefix)),
+      is_root_isolate_(is_root_isolate),
+      unhandled_exception_callback_(std::move(unhandled_exception_callback)),
+      log_message_callback_(std::move(log_message_callback)),
+      isolate_name_server_(std::move(isolate_name_server)),
+      context_(context) {
+  AddOrRemoveTaskObserver(true /* add */);
+}
+
+UIDartState::~UIDartState() {
+  AddOrRemoveTaskObserver(false /* remove */);
+}
+
+const std::string& UIDartState::GetAdvisoryScriptURI() const {
+  return context_.advisory_script_uri;
+}
+
+void UIDartState::DidSetIsolate() {
+  main_port_ = Dart_GetMainPortId();
+  std::ostringstream debug_name;
+  // main.dart$main-1234
+  debug_name << context_.advisory_script_uri << "$"
+             << context_.advisory_script_entrypoint << "-" << main_port_;
+  SetDebugName(debug_name.str());
+}
+
+void UIDartState::ThrowIfUIOperationsProhibited() {
+  if (!UIDartState::Current()->IsRootIsolate()) {
+    Dart_EnterScope();
+    Dart_ThrowException(
+        tonic::ToDart("UI actions are only available on root isolate."));
+  }
+}
+
+void UIDartState::SetDebugName(const std::string& debug_name) {
+  debug_name_ = debug_name;
+  if (platform_configuration_) {
+    platform_configuration_->client()->UpdateIsolateDescription(debug_name_,
+                                                                main_port_);
+  }
+}
+
+UIDartState* UIDartState::Current() {
+  return static_cast<UIDartState*>(DartState::Current());
+}
+
+void UIDartState::SetPlatformConfiguration(
+    std::unique_ptr<PlatformConfiguration> platform_configuration) {
+  FML_DCHECK(IsRootIsolate());
+  platform_configuration_ = std::move(platform_configuration);
+  if (platform_configuration_) {
+    platform_configuration_->client()->UpdateIsolateDescription(debug_name_,
+                                                                main_port_);
+  }
+}
+
+void UIDartState::SetPlatformMessageHandler(
+    std::weak_ptr<PlatformMessageHandler> handler) {
+  FML_DCHECK(!IsRootIsolate());
+  platform_message_handler_ = std::move(handler);
+}
+
+const TaskRunners& UIDartState::GetTaskRunners() const {
+  return context_.task_runners;
+}
+
+std::shared_ptr<fml::ConcurrentTaskRunner>
+UIDartState::GetConcurrentTaskRunner() const {
+  return context_.concurrent_task_runner;
+}
+
+void UIDartState::ScheduleMicrotask(Dart_Handle closure) {
+  if (tonic::CheckAndHandleError(closure) || !Dart_IsClosure(closure)) {
+    return;
+  }
+
+  microtask_queue_.ScheduleMicrotask(closure);
+}
+
+void UIDartState::FlushMicrotasksNow() {
+  microtask_queue_.RunMicrotasks();
+}
+
+bool UIDartState::HasPendingMicrotasks() {
+  return microtask_queue_.HasMicrotasks();
+}
+
+void UIDartState::AddOrRemoveTaskObserver(bool add) {
+  auto task_runner = context_.task_runners.GetUITaskRunner();
+  if (!task_runner) {
+    // This may happen in case the isolate has no thread affinity (for example,
+    // the service isolate).
+    return;
+  }
+  FML_DCHECK(add_callback_ && remove_callback_);
+  if (add) {
+    FML_DCHECK(!callback_queue_id_.has_value());
+    callback_queue_id_ =
+        add_callback_(reinterpret_cast<intptr_t>(this),
+                      [this]() { this->FlushMicrotasksNow(); });
+  } else if (callback_queue_id_.has_value()) {
+    remove_callback_(callback_queue_id_.value(),
+                     reinterpret_cast<intptr_t>(this));
+    callback_queue_id_.reset();
+  }
+}
+
+std::shared_ptr<IsolateNameServer> UIDartState::GetIsolateNameServer() const {
+  return isolate_name_server_;
+}
+
+tonic::DartErrorHandleType UIDartState::GetLastError() {
+  tonic::DartErrorHandleType error = message_handler().isolate_last_error();
+  if (error == tonic::kNoError) {
+    error = microtask_queue_.GetLastError();
+  }
+  return error;
+}
+
+void UIDartState::LogMessage(const std::string& tag,
+                             const std::string& message) const {
+  if (log_message_callback_) {
+    log_message_callback_(tag, message);
+  }
+}
+
+Dart_Handle UIDartState::HandlePlatformMessage(
+    std::unique_ptr<PlatformMessage> message) {
+  if (platform_configuration_) {
+    platform_configuration_->client()->HandlePlatformMessage(
+        std::move(message));
+  } else {
+    std::shared_ptr<PlatformMessageHandler> handler =
+        platform_message_handler_.lock();
+    if (handler) {
+      handler->HandlePlatformMessage(std::move(message));
+    } else {
+      return tonic::ToDart(
+          "No platform channel handler registered for background isolate.");
+    }
+  }
+
+  return Dart_Null();
+}
+
+int64_t UIDartState::GetRootIsolateToken() const {
+  return IsRootIsolate() ? reinterpret_cast<int64_t>(this) : 0;
+}
+
+}  // namespace flutter

@@ -1,0 +1,14 @@
+name: flutter
+description: "A new Flutter package project."
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: ^3.11.0-169.0.dev
+  flutter: ">=1.17.0"
+
+dependencies:
+  sky_engine:
+    sdk: flutter
+
+dev_dependencies:

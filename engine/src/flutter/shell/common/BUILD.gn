@@ -1,0 +1,223 @@
+# Copyright 2013 The Flutter Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//flutter/common/config.gni")
+import("//flutter/testing/testing.gni")
+
+if (is_fuchsia) {
+  import("//flutter/tools/fuchsia/gn-sdk/src/gn_configs.gni")
+}
+
+# Template to generate a dart embedder resource.cc file.
+# Required invoker inputs:
+#   String output (name of output file)
+#   List inputs (list of input files to be included)
+#   String table_name (name of symbol for resource table)
+#   String root_prefix (base directory of resources)
+# Optional invoker inputs:
+#   String input_directory (directory of resources that are recursively added)
+#   List deps
+#   List datadeps
+template("dart_embedder_resources") {
+  action(target_name) {
+    script = "$dart_src/runtime/tools/create_resources.py"
+    deps = []
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    datadeps = []
+    if (defined(invoker.datadeps)) {
+      datadeps = invoker.datadeps
+    }
+
+    output = invoker.output
+    outputs = [ output ]
+
+    inputs = [ script ] + invoker.inputs
+
+    root_prefix = rebase_path(invoker.root_prefix)
+
+    args = [
+      "--output",
+      rebase_path(output),
+      "--outer_namespace",
+      "flutter",
+      "--inner_namespace",
+      "runtime",
+      "--table_name",
+      invoker.table_name,
+      "--root_prefix",
+      root_prefix,
+    ]
+    if (defined(invoker.input_directory)) {
+      args += [
+        "--client_root",
+        rebase_path(invoker.input_directory),
+      ]
+    }
+    args += rebase_path(invoker.inputs)
+  }
+}
+
+source_set("platform_message_handler") {
+  sources = [ "platform_message_handler.h" ]
+  public_configs = [ "//flutter:config" ]
+  deps = [ "//flutter/fml" ]
+}
+
+source_set("common") {
+  sources = [
+    "engine.cc",
+    "engine.h",
+    "platform_view.cc",
+    "platform_view.h",
+    "run_configuration.cc",
+    "run_configuration.h",
+    "shell.cc",
+    "shell.h",
+    "switches.cc",
+    "switches.h",
+    "thread_host.cc",
+    "thread_host.h",
+  ]
+
+  public_configs = [ "//flutter:config" ]
+
+  public_deps = [
+    "//flutter/shell/version",
+    "//flutter/third_party/rapidjson",
+    "//flutter/third_party/tonic",
+  ]
+
+  deps = [
+    "$dart_src/runtime:dart_api",
+    "//flutter/assets",
+    "//flutter/common",
+    "//flutter/fml",
+    "//flutter/lib/ui",
+    "//flutter/runtime",
+    "//flutter/shell/common:base64",
+    "//flutter/shell/geometry",
+    "//flutter/shell/profiling",
+  ]
+}
+
+# These are in their own source_set to avoid a dependency cycle with //common/graphics
+source_set("base64") {
+  sources = [
+    "base64.cc",
+    "base64.h",
+  ]
+  deps = [ "//flutter/fml" ]
+}
+
+test_fixtures("shell_unittests_fixtures") {
+  dart_main = "fixtures/shell_test.dart"
+
+  fixtures = []
+}
+
+template("shell_host_executable") {
+  executable(target_name) {
+    testonly = true
+
+    deps = []
+
+    ldflags = []
+
+    forward_variables_from(invoker, "*")
+
+    deps += [
+      ":common",
+      "//flutter/lib/snapshot",
+      "//flutter/runtime:libdart",
+    ]
+
+    public_configs = [ "//flutter:export_dynamic_symbols" ]
+  }
+}
+
+if (enable_unittests) {
+  shell_host_executable("shell_benchmarks") {
+    sources = [
+      "dart_native_benchmarks.cc",
+      "shell_benchmarks.cc",
+    ]
+
+    deps = [
+      ":shell_unittests_fixtures",
+      "//flutter/benchmarking",
+      "//flutter/testing:dart",
+      "//flutter/testing:fixture_test",
+      "//flutter/testing:testing_lib",
+    ]
+  }
+
+  config("shell_test_fixture_sources_config") {
+    defines = [
+      # Required for MSVC STL
+      "_ENABLE_ATOMIC_ALIGNMENT_FIX",
+    ]
+  }
+
+  source_set("shell_test_fixture_sources") {
+    testonly = true
+
+    sources = [
+      "shell_test_platform_view.cc",
+      "shell_test.cc",
+      "shell_test.h",
+    ]
+
+    public_deps = [
+      "//flutter/runtime",
+      "//flutter/shell/common",
+      "//flutter/testing",
+    ]
+
+    deps = [
+      "//flutter/assets",
+      "//flutter/common",
+      "//flutter/lib/ui",
+      "//flutter/testing:dart",
+      "//flutter/testing:fixture_test",
+      "//flutter/third_party/rapidjson",
+    ]
+
+    public_configs = [ ":shell_test_fixture_sources_config" ]
+  }
+
+  shell_host_executable("shell_unittests") {
+    testonly = true
+
+    sources = [
+      "base64_unittests.cc",
+      "engine_unittests.cc",
+      "shell_unittests.cc",
+      "switches_unittests.cc",
+    ]
+
+    deps = [
+      ":shell_test_fixture_sources",
+      ":shell_unittests_fixtures",
+      "//flutter/assets",
+      "//flutter/shell/common:base64",
+      "//flutter/shell/profiling:profiling_unittests",
+      "//flutter/shell/version",
+      "//flutter/testing:fixture_test",
+      "//flutter/third_party/googletest:gmock",
+    ]
+
+    if (is_fuchsia) {
+      sources += [ "shell_fuchsia_unittests.cc" ]
+
+      deps += [
+        "${fuchsia_sdk}/fidl/fuchsia.intl",
+        "${fuchsia_sdk}/fidl/fuchsia.settings",
+        "${fuchsia_sdk}/pkg/fidl_cpp",
+        "${fuchsia_sdk}/pkg/sys_cpp",
+      ]
+    }
+  }
+}

@@ -1,0 +1,154 @@
+# Copyright 2013 The Flutter Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_win)
+
+import("//flutter/testing/testing.gni")
+
+_public_headers = [ "public/flutter_windows.h" ]
+_internal_headers = [ "flutter_windows_internal.h" ]
+
+# Any files that are built by clients (client_wrapper code, library headers for
+# implementations using this shared code, etc.) include the public headers
+# assuming they are in the include path. This configuration should be added to
+# any such code that is also built by GN to make the includes work.
+config("relative_flutter_windows_headers") {
+  include_dirs = [ "public" ]
+}
+
+# The headers are a separate source set since the client wrapper is allowed
+# to depend on the public headers, but none of the rest of the code.
+source_set("flutter_windows_headers") {
+  public = _public_headers + _internal_headers
+
+  public_deps = [ "//flutter/shell/platform/common:common_cpp_library_headers" ]
+
+  configs +=
+      [ "//flutter/shell/platform/common:desktop_library_implementation" ]
+
+  public_configs =
+      [ "//flutter/shell/platform/common:relative_flutter_library_headers" ]
+}
+
+source_set("flutter_windows_source") {
+  # Common Windows sources.
+  sources = [
+    "flutter_desktop_messenger.h",
+    "flutter_project_bundle.cc",
+    "flutter_project_bundle.h",
+    "flutter_windows.cc",
+    "flutter_windows_engine.cc",
+    "flutter_windows_engine.h",
+    "system_utils.cc",
+    "system_utils.h",
+    "task_runner.cc",
+    "task_runner.h",
+    "task_runner_window.cc",
+    "task_runner_window.h",
+    "wchar_util.cc",
+    "wchar_util.h",
+    "window_state.h",
+    "windows_proc_table.cc",
+    "windows_proc_table.h",
+    "windowsx_shim.h",
+  ]
+
+  libs = [
+    "dwmapi.lib",
+    "imm32.lib",
+  ]
+
+  configs += [
+    "//flutter/shell/platform/common:desktop_library_implementation",
+  ]
+
+  defines = [ "FLUTTER_ENGINE_NO_PROTOTYPES" ]
+
+  public_deps = [
+    "//flutter/fml:string_conversion",
+  ]
+
+  deps = [
+    ":flutter_windows_headers",
+    "//flutter/fml",
+    "//flutter/shell/geometry",
+    "//flutter/shell/platform/common:common_cpp",
+    "//flutter/shell/platform/common:common_cpp_isolate_scope",
+    "//flutter/shell/platform/common:common_cpp_switches",
+    "//flutter/shell/platform/common/client_wrapper",
+    "//flutter/shell/platform/embedder:embedder_as_internal_library",
+    "//flutter/shell/platform/windows/client_wrapper:client_wrapper_windows",
+    "//flutter/third_party/rapidjson",
+  ]
+}
+
+copy("publish_headers_windows") {
+  sources = _public_headers
+  outputs = [ "$root_out_dir/{{source_file_part}}" ]
+
+  # The Windows header assumes the presence of the common headers.
+  deps = [ "//flutter/shell/platform/common:publish_headers" ]
+}
+
+shared_library("flutter_windows") {
+  deps = [ ":flutter_windows_source" ]
+
+  public_configs = [ "//flutter:config" ]
+}
+
+test_fixtures("flutter_windows_fixtures") {
+  dart_main = "fixtures/main.dart"
+  fixtures = []
+}
+
+executable("flutter_windows_unittests") {
+  testonly = true
+
+  # Common Windows test sources.
+  sources = [
+    "flutter_project_bundle_unittests.cc",
+    "flutter_windows_engine_unittests.cc",
+    "flutter_windows_unittests.cc",
+    "system_utils_unittests.cc",
+    "task_runner_unittests.cc",
+    "testing/engine_modifier.h",
+    "testing/flutter_windows_engine_builder.cc",
+    "testing/flutter_windows_engine_builder.h",
+    "testing/windows_test.cc",
+    "testing/windows_test.h",
+    "testing/windows_test_config_builder.cc",
+    "testing/windows_test_config_builder.h",
+    "testing/windows_test_context.cc",
+    "testing/windows_test_context.h",
+    "testing/wm_builders.cc",
+    "testing/wm_builders.h",
+  ]
+
+  configs +=
+      [ "//flutter/shell/platform/common:desktop_library_implementation" ]
+
+  public_configs = [ "//flutter:config" ]
+
+  deps = [
+    ":flutter_windows_fixtures",
+    ":flutter_windows_headers",
+    ":flutter_windows_source",
+    "//flutter/shell/platform/common:common_cpp",
+    "//flutter/shell/platform/common/client_wrapper",
+    "//flutter/shell/platform/embedder:embedder_as_internal_library",
+    "//flutter/shell/platform/embedder:embedder_test_utils",
+    "//flutter/testing",
+    "//flutter/testing:dart",
+    "//flutter/third_party/rapidjson",
+    "//flutter/third_party/tonic",
+  ]
+}
+
+group("windows") {
+  deps = [
+    ":flutter_windows",
+    ":publish_headers_windows",
+    "//flutter/shell/platform/windows/client_wrapper:publish_wrapper_windows",
+  ]
+}

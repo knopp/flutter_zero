@@ -1,0 +1,12 @@
+CompileFlags:
+  Add:
+    - -I../../../../examples/hello_world/linux/
+    - -I../../../../engine/src/out/host_debug_unopt_arm64/
+    - -isystem/usr/include/glib-2.0
+    - -isystem/usr/include/gtk-3.0
+    - -isystem/usr/include/pango-1.0
+    - -isystem/usr/include/harfbuzz
+    - -isystem/usr/include/cairo
+    - -isystem/usr/include/gdk-pixbuf-2.0
+    - -isystem/usr/include/atk-1.0
+    - -isystem/usr/lib/aarch64-linux-gnu/glib-2.0/include

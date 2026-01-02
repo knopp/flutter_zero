@@ -1,0 +1,46 @@
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef FLUTTER_RUNTIME_RUNTIME_DELEGATE_H_
+#define FLUTTER_RUNTIME_RUNTIME_DELEGATE_H_
+
+#include <memory>
+#include <vector>
+
+#include "flutter/assets/asset_manager.h"
+#include "flutter/lib/ui/window/platform_message.h"
+#include "flutter/shell/common/platform_message_handler.h"
+
+namespace flutter {
+
+class RuntimeDelegate {
+ public:
+  virtual void HandlePlatformMessage(
+      std::unique_ptr<PlatformMessage> message) = 0;
+
+  virtual std::shared_ptr<AssetManager> GetAssetManager() = 0;
+
+  virtual void OnRootIsolateCreated() = 0;
+
+  virtual void UpdateIsolateDescription(const std::string isolate_name,
+                                        int64_t isolate_port) = 0;
+
+  virtual std::unique_ptr<std::vector<std::string>>
+  ComputePlatformResolvedLocale(
+      const std::vector<std::string>& supported_locale_data) = 0;
+
+  virtual void RequestDartDeferredLibrary(intptr_t loading_unit_id) = 0;
+
+  virtual std::weak_ptr<PlatformMessageHandler> GetPlatformMessageHandler()
+      const = 0;
+
+  virtual void SendChannelUpdate(std::string name, bool listening) = 0;
+
+ protected:
+  virtual ~RuntimeDelegate();
+};
+
+}  // namespace flutter
+
+#endif  // FLUTTER_RUNTIME_RUNTIME_DELEGATE_H_

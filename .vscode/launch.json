@@ -1,0 +1,129 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Hello World (host arm64, debug)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "examples/hello_world",
+            "program": "lib/main.dart",
+            "osx": {
+                "toolArgs": [
+                    "--local-engine=host_debug_unopt_arm64",
+                    "--local-engine-host=host_debug_unopt_arm64",
+                ]
+            },
+            "linux": {
+                "toolArgs": [
+                    "--local-engine=host_debug_unopt_arm64",
+                    "--local-engine-host=host_debug_unopt_arm64",
+                ]
+            },
+        },
+        {
+            "name": "Hello World (iOS sim arm64, debug)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "examples/hello_world",
+            "program": "lib/main.dart",
+            "osx": {
+                "toolArgs": [
+                    "--local-engine=ios_debug_sim_unopt_arm64",
+                    "--local-engine-host=host_debug_unopt_arm64",
+                ]
+            },
+        },
+        {
+            "name": "Hello World (android, arm64, debug)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "examples/hello_world",
+            "program": "lib/main.dart",
+            "osx": {
+                "toolArgs": [
+                    "--local-engine=android_debug_unopt_arm64",
+                    "--local-engine-host=host_debug_unopt_arm64",
+                ]
+            },
+        },
+        {
+            "name": "Hello World (release)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "examples/hello_world",
+            "program": "lib/main.dart",
+            "flutterMode": "release",
+            "osx": {
+                "toolArgs": [
+                    "--local-engine=host_release_arm64",
+                    "--local-engine-host=host_release_arm64",
+                ]
+            },
+        },
+        {
+            "name": "Hello World (web, debug)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "examples/hello_world",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "toolArgs": [
+                "--local-web-sdk=wasm_debug_unopt",
+            ]
+        },
+        {
+            "name": "Hello World (web, release)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "examples/hello_world",
+            "program": "lib/main.dart",
+            "flutterMode": "release",
+            "toolArgs": [
+                "--local-web-sdk=wasm_release",
+            ]
+        },
+        {
+            "type": "lldb-dap",
+            "request": "launch",
+            "name": "flutter_desktop_darwin_unittests",
+            "program": "flutter_desktop_darwin_unittests",
+            "args": [],
+            "env": [],
+            "cwd": "${workspaceFolder}/engine/src/out/host_debug_unopt_arm64/"
+        },
+        {
+            "type": "lldb-dap",
+            "request": "launch",
+            "name": "runtime_unittests",
+            "program": "runtime_unittests",
+            "args": [
+                "--gtest_filter=DartIsolateTest.CanCreateServiceIsolate"
+            ],
+            "env": [],
+            "cwd": "${workspaceFolder}/engine/src/out/host_debug_unopt_arm64/"
+        },
+        {
+            "type": "lldb-dap",
+            "request": "launch",
+            "name": "shell_unittests",
+            "program": "shell_unittests",
+            "args": [
+                "--gtest_filter=ShellTest.ImmutableBufferLoadsAssetOnBackgroundThread"
+            ],
+            "env": [],
+            "cwd": "${workspaceFolder}/engine/src/out/host_debug_unopt_arm64/"
+        },
+        {
+            "type": "lldb-dap",
+            "request": "launch",
+            "name": "embedder_unittests",
+            "program": "embedder_unittests",
+            "args": [],
+            "env": [],
+            "cwd": "${workspaceFolder}/engine/src/out/host_debug_unopt_arm64/"
+        },
+    ]
+}

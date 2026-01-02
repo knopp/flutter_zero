@@ -1,0 +1,56 @@
+From 6033cb258b1e4e044317ad7f371bd2e93b1245b4 Mon Sep 17 00:00:00 2001
+From: Matej Knopp <matej.knopp@gmail.com>
+Date: Sun, 28 Dec 2025 18:45:56 +0100
+Subject: [PATCH 23/37] flutter_tools: no canvaskit
+
+---
+ .../lib/src/build_system/targets/web.dart     | 29 +------------------
+ 1 file changed, 1 insertion(+), 28 deletions(-)
+
+diff --git a/packages/flutter_tools/lib/src/build_system/targets/web.dart b/packages/flutter_tools/lib/src/build_system/targets/web.dart
+index 0f2ac9edb8..82be901705 100644
+--- a/packages/flutter_tools/lib/src/build_system/targets/web.dart
++++ b/packages/flutter_tools/lib/src/build_system/targets/web.dart
+@@ -725,38 +725,11 @@ class WebBuiltInAssets extends Target {
+   @override
+   List<Source> get inputs => const <Source>[Source.hostArtifact(HostArtifact.flutterWebSdk)];
+ 
+-  Directory get _canvasKitDirectory => globals.fs.directory(
+-    fileSystem.path.join(
+-      globals.artifacts!.getHostArtifact(HostArtifact.flutterWebSdk).path,
+-      'canvaskit',
+-    ),
+-  );
+-
+-  List<File> get _canvasKitFiles =>
+-      _canvasKitDirectory.listSync(recursive: true).whereType<File>().toList();
+-
+-  String _filePathRelativeToCanvasKitDirectory(File file) =>
+-      fileSystem.path.relative(file.path, from: _canvasKitDirectory.path);
+-
+   @override
+-  List<Source> get outputs => <Source>[
+-    const Source.pattern('{BUILD_DIR}/flutter.js'),
+-    for (final File file in _canvasKitFiles)
+-      Source.pattern('{BUILD_DIR}/canvaskit/${_filePathRelativeToCanvasKitDirectory(file)}'),
+-  ];
++  List<Source> get outputs => <Source>[const Source.pattern('{BUILD_DIR}/flutter.js')];
+ 
+   @override
+   Future<void> build(Environment environment) async {
+-    for (final File file in _canvasKitFiles) {
+-      final String relativePath = _filePathRelativeToCanvasKitDirectory(file);
+-      final String targetPath = fileSystem.path.join(
+-        environment.outputDir.path,
+-        'canvaskit',
+-        relativePath,
+-      );
+-      file.copySync(targetPath);
+-    }
+-
+     // Write the flutter.js file
+     final String flutterJsOut = fileSystem.path.join(environment.outputDir.path, 'flutter.js');
+     final File flutterJsFile = fileSystem.file(
+-- 
+2.51.2
+

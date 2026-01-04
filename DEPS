@@ -83,7 +83,7 @@ vars = {
   'download_android_deps': 'host_os == "mac" or (host_os == "linux" and host_cpu == "x64")',
 
   # Checkout Java dependencies only on platforms that do not have java installed on path.
-  'download_jdk': True,
+  'download_jdk': 'not (host_os == "linux" and host_cpu == "arm64")',
 
   # Checkout Windows dependencies only if we are building on Windows.
   'download_windows_deps' : 'host_os == "win"',
@@ -576,7 +576,7 @@ deps = {
      # Always download the JDK since java is required for running the formatter.
      'dep_type': 'cipd',
      # OpenJDK is not available for Linux on ARM64.
-     'condition': 'not (host_os == "linux" and host_cpu == "arm64")',
+     'condition': 'download_jdk',
    },
 
   'engine/src/flutter/third_party/gn': {

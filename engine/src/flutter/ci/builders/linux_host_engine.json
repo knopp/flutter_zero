@@ -22,7 +22,6 @@
                         "out/ci/host_debug/zip_archives/flutter_patched_sdk.zip",
                         "out/ci/host_debug/zip_archives/linux-x64/artifacts.zip",
                         "out/ci/host_debug/zip_archives/linux-x64/font-subset.zip",
-                        "out/ci/host_debug/zip_archives/linux-x64/impeller_sdk.zip",
                         "out/ci/host_debug/zip_archives/linux-x64/linux-x64-embedder.zip"
                     ],
                     "realm": "production"
@@ -56,7 +55,6 @@
                     "flutter/build/archives:flutter_patched_sdk",
                     "flutter/build/archives:artifacts",
                     "flutter/tools/font_subset",
-                    "flutter/impeller/toolkit/interop:sdk",
                     "flutter/build/archives:embedder"
                 ]
             }

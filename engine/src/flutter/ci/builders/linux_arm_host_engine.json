@@ -61,7 +61,6 @@
                     "base_path": "out/ci/linux_debug_arm64/zip_archives/",
                     "include_paths": [
                         "out/ci/linux_debug_arm64/zip_archives/linux-arm64/artifacts.zip",
-                        "out/ci/linux_debug_arm64/zip_archives/linux-arm64/impeller_sdk.zip",
                         "out/ci/linux_debug_arm64/zip_archives/linux-arm64/linux-arm64-embedder.zip",
                         "out/ci/linux_debug_arm64/zip_archives/linux-arm64/font-subset.zip",
                         "out/ci/linux_debug_arm64/zip_archives/linux-arm64-debug/linux-arm64-flutter-gtk.zip",
@@ -100,7 +99,6 @@
                     "flutter/build/archives:dart_sdk_archive",
                     "flutter/tools/font_subset",
                     "flutter/shell/platform/linux:flutter_gtk",
-                    "flutter/impeller/toolkit/interop:sdk",
                     "flutter/build/archives:embedder"
                 ]
             }

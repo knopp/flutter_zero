@@ -286,7 +286,8 @@ class BuildConfigWriter {
     }
     {
       final step = steps.beginMap('name', 'Free disk space');
-      step.write('if', "runner.os == 'Linux'");
+      // The script fails on arm64 Linux runners.
+      step.write('if', "runner.os == 'Linux' && runner.arch == 'X64'");
       step.write(
         'run',
         'curl -fsSL https://raw.githubusercontent.com/apache/arrow/e49d8ae15583ceff03237571569099a6ad62be32/ci/scripts/util_free_space.sh | bash',

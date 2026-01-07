@@ -46,6 +46,7 @@ ALL_PACKAGES = [
     os.path.join(ENGINE_DIR, 'tools', 'pkg', 'engine_repo_tools'),
     os.path.join(ENGINE_DIR, 'tools', 'pkg', 'git_repo_tools'),
     os.path.join(ENGINE_DIR, 'tools', 'pkg', 'process_fakes'),
+    os.path.join(ENGINE_DIR, 'tools', 'pkg', 'github_workflow_generator'),
 ]
 
 

@@ -40,6 +40,9 @@ case "$(uname -m)" in
   arm64)
     CPU="arm64"
     ;;
+  aarch64)
+    CPU="arm64"
+    ;;
   x86_64)
     CPU="x64"
     ;;

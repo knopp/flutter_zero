@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "flutter/fml/build_config.h"
 #include "flutter/fml/closure.h"
 #include "flutter/fml/make_copyable.h"
 #include "flutter/fml/thread.h"

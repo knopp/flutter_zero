@@ -27,6 +27,12 @@ def get_clang_version():
   clang_executable = str(
       os.path.join(_src_root_dir, 'flutter', 'buildtools', 'mac-x64', 'clang', 'bin', 'clang++')
   )
+  if not os.path.exists(clang_executable):
+    clang_executable = str(
+        os.path.join(
+            _src_root_dir, 'flutter', 'buildtools', 'mac-arm64', 'clang', 'bin', 'clang++'
+        )
+    )
   version = subprocess.check_output([clang_executable, '--version'])
   return version.splitlines()[0]
 

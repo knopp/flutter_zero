@@ -607,7 +607,7 @@ deps = {
         'version': Var('clang_version'),
       }
     ],
-    'condition': 'host_os == "mac"', # On ARM64 Macs too because Goma doesn't support the host-arm64 toolchain.
+    'condition': 'host_os == "mac" and host_cpu == "x64"',
     'dep_type': 'cipd',
   },
 
@@ -629,7 +629,7 @@ deps = {
         'version': Var('clang_version'),
       }
     ],
-    'condition': 'host_os == "linux" or host_os == "mac"',
+    'condition': 'host_os == "linux" and host_cpu == "x64"',
     'dep_type': 'cipd',
   },
 

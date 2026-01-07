@@ -1,0 +1,16 @@
+name: github_workflow_generator
+description: Generate github actions to build engine artifacts.
+resolution: workspace
+publish_to: none
+
+environment:
+  sdk: ^3.9.0-0
+
+# Add regular dependencies here.
+dependencies:
+  engine_build_configs:
+  args: any
+  path: ^1.9.0
+
+dev_dependencies:
+  test: ^1.25.6

@@ -103,6 +103,7 @@ workspace:
   - tools/pkg/engine_repo_tools
   - tools/pkg/git_repo_tools
   - tools/pkg/process_fakes
+  - tools/pkg/github_workflow_generator
 
 # Declare all dependencies that are used by one or more packages.
 #

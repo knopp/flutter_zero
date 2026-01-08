@@ -252,7 +252,7 @@ class FlutterSdk extends EngineCachedArtifact {
   final Platform _platform;
 
   @override
-  List<String> getPackageDirs() => const <String>['sky_engine', 'flutter_gpu'];
+  List<String> getPackageDirs() => const <String>['sky_engine'];
 
   @override
   List<List<String>> getBinaryDirs() {

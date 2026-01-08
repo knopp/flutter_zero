@@ -1,0 +1,25 @@
+From d3633c83f8dfe138a3abe2d39d6524b11c2dbac0 Mon Sep 17 00:00:00 2001
+From: Matej Knopp <matej.knopp@gmail.com>
+Date: Thu, 8 Jan 2026 19:31:38 +0100
+Subject: [PATCH] Don't try to download flutter_gpu
+
+---
+ packages/flutter_tools/lib/src/flutter_cache.dart | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/flutter_tools/lib/src/flutter_cache.dart b/packages/flutter_tools/lib/src/flutter_cache.dart
+index 31f5fbc825a..6fb1adbfd33 100644
+--- a/packages/flutter_tools/lib/src/flutter_cache.dart
++++ b/packages/flutter_tools/lib/src/flutter_cache.dart
+@@ -252,7 +252,7 @@ class FlutterSdk extends EngineCachedArtifact {
+   final Platform _platform;
+ 
+   @override
+-  List<String> getPackageDirs() => const <String>['sky_engine', 'flutter_gpu'];
++  List<String> getPackageDirs() => const <String>['sky_engine'];
+ 
+   @override
+   List<List<String>> getBinaryDirs() {
+-- 
+2.51.2
+

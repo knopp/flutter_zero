@@ -40,13 +40,19 @@ class ArtifactPublisher {
     required String sourcePath,
     required String outputPath,
   }) {
+    // First tar the artifact to preserve attributes.
+    final id = _count++;
+    {
+      final step = steps.beginMap('name', 'Tar $sourcePath');
+      final run = step.beginMap('run', '|');
+      run.writeln('tar -cvf artifact_$id.tar $sourcePath');
+    }
     final step = steps.beginMap('name', 'Upload $outputPath/${path.basename(sourcePath)}');
     step.write('uses', 'actions/upload-artifact@v4');
     final w = step.beginMap('with');
-    final id = _count++;
     final name = 'artifact_\${{ steps.engine_content_hash.outputs.value }}_$id';
     w.write('name', name);
-    w.write('path', sourcePath);
+    w.write('path', 'artifact_$id.tar');
     w.write('retention-days', '1');
     _dependentJobs.add(sourceJobName);
     _artifacts.add(
@@ -94,11 +100,19 @@ class ArtifactPublisher {
     }
     for (final artifact in _artifacts) {
       final name = path.basename(artifact.sourcePath);
-      final step = steps.beginMap('name', 'Download ${artifact.outputPath}/$name');
-      step.write('uses', 'actions/download-artifact@v4');
-      final w = step.beginMap('with');
-      w.write('name', artifact.artifactName);
-      w.write('path', 'artifact-${artifact.id}/');
+      {
+        final step = steps.beginMap('name', 'Download ${artifact.outputPath}/$name');
+        step.write('uses', 'actions/download-artifact@v4');
+        final w = step.beginMap('with');
+        w.write('name', artifact.artifactName);
+        w.write('path', 'artifact-${artifact.id}/');
+      }
+      {
+        // Extract the tarball.
+        final step = steps.beginMap('name', 'Extract ${artifact.outputPath}/$name');
+        final run = step.beginMap('run', '|');
+        run.writeln('tar -xvf artifact-${artifact.id}/artifact_${artifact.id}.tar -C artifact-${artifact.id}/');
+      }
     }
     for (final artifact in _artifacts) {
       final name = path.basename(artifact.sourcePath);
@@ -110,7 +124,10 @@ class ArtifactPublisher {
       w.write('r2-secret-access-key', r'${{ secrets.R2_SECRET_ACCESS_KEY }}');
       w.write('r2-bucket', r'${{ env.R2_BUCKET }}');
       w.write('source-dir', 'artifact-${artifact.id}/');
-      w.write('destination-dir', 'flutter_infra_release/flutter/\${{ steps.engine_content_hash.outputs.value }}/${artifact.outputPath}');
+      w.write(
+        'destination-dir',
+        'flutter_infra_release/flutter/\${{ steps.engine_content_hash.outputs.value }}/${artifact.outputPath}',
+      );
     }
   }
 
@@ -192,11 +209,16 @@ class BuildConfigWriter {
       // in dependent jobs.
       if (_config.generators.isNotEmpty) {
         {
+          final step = steps.beginMap('name', 'Tar build files');
+          final run = step.beginMap('run', '|');
+          run.writeln('tar -cvf engine/src/out/${build.name}/archive.tar engine/src/out/${build.name}');
+        }
+        {
           final step = steps.beginMap('name', 'Upload build files');
           step.write('uses', 'actions/upload-artifact@v4');
           final w = step.beginMap('with');
           w.write('name', 'artifacts-${_nameForBuild(build)}-\${{ steps.engine_content_hash.outputs.value }}');
-          w.write('path', 'engine/src/out/${build.name}');
+          w.write('path', 'engine/src/out/${build.name}/archive.tar');
           w.write('retention-days', '1');
         }
       }
@@ -234,10 +256,18 @@ class BuildConfigWriter {
       _writePrelude(steps);
       for (final build in _config.builds) {
         final step = steps.beginMap('name', 'Download Artifacts from ${_nameForBuild(build)}');
-        step.write('uses', 'actions/download-artifact@v4');
-        final w = step.beginMap('with');
-        w.write('name', 'artifacts-${_nameForBuild(build)}-\${{ steps.engine_content_hash.outputs.value }}');
-        w.write('path', 'engine/src/out/${build.name}');
+        {
+          step.write('uses', 'actions/download-artifact@v4');
+          final w = step.beginMap('with');
+          w.write('name', 'artifacts-${_nameForBuild(build)}-\${{ steps.engine_content_hash.outputs.value }}');
+          w.write('path', 'engine/src/out/${build.name}');
+        }
+        {
+          final step = steps.beginMap('name', 'Extract Artifacts from ${_nameForBuild(build)}');
+          final run = step.beginMap('run', '|');
+          run.writeln('tar -xvf engine/src/out/${build.name}/archive.tar -C engine/src/out/${build.name}');
+          run.writeln('rm engine/src/out/${build.name}/archive.tar');
+        }
       }
       for (final generator in _config.generators) {
         _writeTestTask(steps, generator);

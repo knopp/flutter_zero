@@ -112,23 +112,23 @@ jobs:
           retention-days: 1
       - name: Tar engine/src/out/ci/host_debug/zip_archives/darwin-x64/artifacts.zip
         run: |
-          cd engine/src/out/ci/host_debug/zip_archives/darwin-x64/artifacts.zip
-          tar -cvf artifact_0.tar .
-      - name: Upload darwin-x64/artifacts.zip
+          cd engine/src/out/ci/host_debug/zip_archives/darwin-x64
+          tar -cvf artifact_0.tar artifacts.zip
+      - name: Upload darwin-x64/mac_host_debug
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_0
-          path: engine/src/out/ci/host_debug/zip_archives/darwin-x64/artifacts.zip/artifact_0.tar
+          path: engine/src/out/ci/host_debug/zip_archives/darwin-x64/artifact_0.tar
           retention-days: 1
       - name: Tar engine/src/out/ci/host_debug/zip_archives/dart-sdk-darwin-x64.zip
         run: |
-          cd engine/src/out/ci/host_debug/zip_archives/dart-sdk-darwin-x64.zip
-          tar -cvf artifact_1.tar .
-      - name: Upload /dart-sdk-darwin-x64.zip
+          cd engine/src/out/ci/host_debug/zip_archives
+          tar -cvf artifact_1.tar dart-sdk-darwin-x64.zip
+      - name: Upload /mac_host_debug
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_1
-          path: engine/src/out/ci/host_debug/zip_archives/dart-sdk-darwin-x64.zip/artifact_1.tar
+          path: engine/src/out/ci/host_debug/zip_archives/artifact_1.tar
           retention-days: 1
   mac_host_debug_gen_snapshot:
     runs-on: macos-latest
@@ -234,13 +234,13 @@ jobs:
           retention-days: 1
       - name: Tar engine/src/out/ci/host_profile/zip_archives/darwin-x64-profile/artifacts.zip
         run: |
-          cd engine/src/out/ci/host_profile/zip_archives/darwin-x64-profile/artifacts.zip
-          tar -cvf artifact_2.tar .
-      - name: Upload darwin-x64-profile/artifacts.zip
+          cd engine/src/out/ci/host_profile/zip_archives/darwin-x64-profile
+          tar -cvf artifact_2.tar artifacts.zip
+      - name: Upload darwin-x64-profile/mac_host_profile
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_2
-          path: engine/src/out/ci/host_profile/zip_archives/darwin-x64-profile/artifacts.zip/artifact_2.tar
+          path: engine/src/out/ci/host_profile/zip_archives/darwin-x64-profile/artifact_2.tar
           retention-days: 1
   mac_host_profile_framework:
     runs-on: macos-latest
@@ -397,23 +397,23 @@ jobs:
           retention-days: 1
       - name: Tar engine/src/out/ci/host_release/zip_archives/darwin-x64-release/artifacts.zip
         run: |
-          cd engine/src/out/ci/host_release/zip_archives/darwin-x64-release/artifacts.zip
-          tar -cvf artifact_3.tar .
-      - name: Upload darwin-x64-release/artifacts.zip
+          cd engine/src/out/ci/host_release/zip_archives/darwin-x64-release
+          tar -cvf artifact_3.tar artifacts.zip
+      - name: Upload darwin-x64-release/mac_host_release
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_3
-          path: engine/src/out/ci/host_release/zip_archives/darwin-x64-release/artifacts.zip/artifact_3.tar
+          path: engine/src/out/ci/host_release/zip_archives/darwin-x64-release/artifact_3.tar
           retention-days: 1
       - name: Tar engine/src/out/ci/host_release/zip_archives/darwin-x64/font-subset.zip
         run: |
-          cd engine/src/out/ci/host_release/zip_archives/darwin-x64/font-subset.zip
-          tar -cvf artifact_4.tar .
-      - name: Upload darwin-x64/font-subset.zip
+          cd engine/src/out/ci/host_release/zip_archives/darwin-x64
+          tar -cvf artifact_4.tar font-subset.zip
+      - name: Upload darwin-x64/mac_host_release
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_4
-          path: engine/src/out/ci/host_release/zip_archives/darwin-x64/font-subset.zip/artifact_4.tar
+          path: engine/src/out/ci/host_release/zip_archives/darwin-x64/artifact_4.tar
           retention-days: 1
   mac_host_release_framework:
     runs-on: macos-latest
@@ -570,23 +570,23 @@ jobs:
           retention-days: 1
       - name: Tar engine/src/out/ci/mac_debug_arm64/zip_archives/darwin-arm64/artifacts.zip
         run: |
-          cd engine/src/out/ci/mac_debug_arm64/zip_archives/darwin-arm64/artifacts.zip
-          tar -cvf artifact_5.tar .
-      - name: Upload darwin-arm64/artifacts.zip
+          cd engine/src/out/ci/mac_debug_arm64/zip_archives/darwin-arm64
+          tar -cvf artifact_5.tar artifacts.zip
+      - name: Upload darwin-arm64/mac_debug_arm64
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_5
-          path: engine/src/out/ci/mac_debug_arm64/zip_archives/darwin-arm64/artifacts.zip/artifact_5.tar
+          path: engine/src/out/ci/mac_debug_arm64/zip_archives/darwin-arm64/artifact_5.tar
           retention-days: 1
       - name: Tar engine/src/out/ci/mac_debug_arm64/zip_archives/dart-sdk-darwin-arm64.zip
         run: |
-          cd engine/src/out/ci/mac_debug_arm64/zip_archives/dart-sdk-darwin-arm64.zip
-          tar -cvf artifact_6.tar .
-      - name: Upload /dart-sdk-darwin-arm64.zip
+          cd engine/src/out/ci/mac_debug_arm64/zip_archives
+          tar -cvf artifact_6.tar dart-sdk-darwin-arm64.zip
+      - name: Upload /mac_debug_arm64
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_6
-          path: engine/src/out/ci/mac_debug_arm64/zip_archives/dart-sdk-darwin-arm64.zip/artifact_6.tar
+          path: engine/src/out/ci/mac_debug_arm64/zip_archives/artifact_6.tar
           retention-days: 1
   mac_debug_framework_arm64:
     runs-on: macos-latest
@@ -743,13 +743,13 @@ jobs:
           retention-days: 1
       - name: Tar engine/src/out/ci/mac_profile_arm64/zip_archives/darwin-arm64-profile/artifacts.zip
         run: |
-          cd engine/src/out/ci/mac_profile_arm64/zip_archives/darwin-arm64-profile/artifacts.zip
-          tar -cvf artifact_7.tar .
-      - name: Upload darwin-arm64-profile/artifacts.zip
+          cd engine/src/out/ci/mac_profile_arm64/zip_archives/darwin-arm64-profile
+          tar -cvf artifact_7.tar artifacts.zip
+      - name: Upload darwin-arm64-profile/mac_profile_arm64
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_7
-          path: engine/src/out/ci/mac_profile_arm64/zip_archives/darwin-arm64-profile/artifacts.zip/artifact_7.tar
+          path: engine/src/out/ci/mac_profile_arm64/zip_archives/darwin-arm64-profile/artifact_7.tar
           retention-days: 1
   mac_profile_framework_arm64:
     runs-on: macos-latest
@@ -906,23 +906,23 @@ jobs:
           retention-days: 1
       - name: Tar engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64/font-subset.zip
         run: |
-          cd engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64/font-subset.zip
-          tar -cvf artifact_8.tar .
-      - name: Upload darwin-arm64/font-subset.zip
+          cd engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64
+          tar -cvf artifact_8.tar font-subset.zip
+      - name: Upload darwin-arm64/mac_release_arm64
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_8
-          path: engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64/font-subset.zip/artifact_8.tar
+          path: engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64/artifact_8.tar
           retention-days: 1
       - name: Tar engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64-release/artifacts.zip
         run: |
-          cd engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64-release/artifacts.zip
-          tar -cvf artifact_9.tar .
-      - name: Upload darwin-arm64-release/artifacts.zip
+          cd engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64-release
+          tar -cvf artifact_9.tar artifacts.zip
+      - name: Upload darwin-arm64-release/mac_release_arm64
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_9
-          path: engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64-release/artifacts.zip/artifact_9.tar
+          path: engine/src/out/ci/mac_release_arm64/zip_archives/darwin-arm64-release/artifact_9.tar
           retention-days: 1
   mac_release_framework_arm64:
     runs-on: macos-latest
@@ -1296,103 +1296,103 @@ jobs:
             --zip
       - name: Tar engine/src/out/debug/framework/FlutterEmbedder.framework.zip
         run: |
-          cd engine/src/out/debug/framework/FlutterEmbedder.framework.zip
-          tar -cvf artifact_10.tar .
-      - name: Upload darwin-x64/FlutterEmbedder.framework.zip
+          cd engine/src/out/debug/framework
+          tar -cvf artifact_10.tar FlutterEmbedder.framework.zip
+      - name: Upload darwin-x64/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_10
-          path: engine/src/out/debug/framework/FlutterEmbedder.framework.zip/artifact_10.tar
+          path: engine/src/out/debug/framework/artifact_10.tar
           retention-days: 1
       - name: Tar engine/src/out/debug/framework/FlutterMacOS.framework.zip
         run: |
-          cd engine/src/out/debug/framework/FlutterMacOS.framework.zip
-          tar -cvf artifact_11.tar .
-      - name: Upload darwin-x64/FlutterMacOS.framework.zip
+          cd engine/src/out/debug/framework
+          tar -cvf artifact_11.tar FlutterMacOS.framework.zip
+      - name: Upload darwin-x64/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_11
-          path: engine/src/out/debug/framework/FlutterMacOS.framework.zip/artifact_11.tar
+          path: engine/src/out/debug/framework/artifact_11.tar
           retention-days: 1
       - name: Tar engine/src/out/profile/framework/FlutterMacOS.framework.zip
         run: |
-          cd engine/src/out/profile/framework/FlutterMacOS.framework.zip
-          tar -cvf artifact_12.tar .
-      - name: Upload darwin-x64-profile/FlutterMacOS.framework.zip
+          cd engine/src/out/profile/framework
+          tar -cvf artifact_12.tar FlutterMacOS.framework.zip
+      - name: Upload darwin-x64-profile/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_12
-          path: engine/src/out/profile/framework/FlutterMacOS.framework.zip/artifact_12.tar
+          path: engine/src/out/profile/framework/artifact_12.tar
           retention-days: 1
       - name: Tar engine/src/out/release/framework/FlutterMacOS.framework.zip
         run: |
-          cd engine/src/out/release/framework/FlutterMacOS.framework.zip
-          tar -cvf artifact_13.tar .
-      - name: Upload darwin-x64-release/FlutterMacOS.framework.zip
+          cd engine/src/out/release/framework
+          tar -cvf artifact_13.tar FlutterMacOS.framework.zip
+      - name: Upload darwin-x64-release/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_13
-          path: engine/src/out/release/framework/FlutterMacOS.framework.zip/artifact_13.tar
+          path: engine/src/out/release/framework/artifact_13.tar
           retention-days: 1
       - name: Tar engine/src/out/debug/snapshot/gen_snapshot.zip
         run: |
-          cd engine/src/out/debug/snapshot/gen_snapshot.zip
-          tar -cvf artifact_14.tar .
-      - name: Upload darwin-x64/gen_snapshot.zip
+          cd engine/src/out/debug/snapshot
+          tar -cvf artifact_14.tar gen_snapshot.zip
+      - name: Upload darwin-x64/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_14
-          path: engine/src/out/debug/snapshot/gen_snapshot.zip/artifact_14.tar
+          path: engine/src/out/debug/snapshot/artifact_14.tar
           retention-days: 1
       - name: Tar engine/src/out/profile/snapshot/gen_snapshot.zip
         run: |
-          cd engine/src/out/profile/snapshot/gen_snapshot.zip
-          tar -cvf artifact_15.tar .
-      - name: Upload darwin-x64-profile/gen_snapshot.zip
+          cd engine/src/out/profile/snapshot
+          tar -cvf artifact_15.tar gen_snapshot.zip
+      - name: Upload darwin-x64-profile/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_15
-          path: engine/src/out/profile/snapshot/gen_snapshot.zip/artifact_15.tar
+          path: engine/src/out/profile/snapshot/artifact_15.tar
           retention-days: 1
       - name: Tar engine/src/out/release/snapshot/gen_snapshot.zip
         run: |
-          cd engine/src/out/release/snapshot/gen_snapshot.zip
-          tar -cvf artifact_16.tar .
-      - name: Upload darwin-x64-release/gen_snapshot.zip
+          cd engine/src/out/release/snapshot
+          tar -cvf artifact_16.tar gen_snapshot.zip
+      - name: Upload darwin-x64-release/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_16
-          path: engine/src/out/release/snapshot/gen_snapshot.zip/artifact_16.tar
+          path: engine/src/out/release/snapshot/artifact_16.tar
           retention-days: 1
       - name: Tar engine/src/out/debug/framework/framework.zip
         run: |
-          cd engine/src/out/debug/framework/framework.zip
-          tar -cvf artifact_17.tar .
-      - name: Upload darwin-x64/framework.zip
+          cd engine/src/out/debug/framework
+          tar -cvf artifact_17.tar framework.zip
+      - name: Upload darwin-x64/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_17
-          path: engine/src/out/debug/framework/framework.zip/artifact_17.tar
+          path: engine/src/out/debug/framework/artifact_17.tar
           retention-days: 1
       - name: Tar engine/src/out/profile/framework/framework.zip
         run: |
-          cd engine/src/out/profile/framework/framework.zip
-          tar -cvf artifact_18.tar .
-      - name: Upload darwin-x64-profile/framework.zip
+          cd engine/src/out/profile/framework
+          tar -cvf artifact_18.tar framework.zip
+      - name: Upload darwin-x64-profile/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_18
-          path: engine/src/out/profile/framework/framework.zip/artifact_18.tar
+          path: engine/src/out/profile/framework/artifact_18.tar
           retention-days: 1
       - name: Tar engine/src/out/release/framework/framework.zip
         run: |
-          cd engine/src/out/release/framework/framework.zip
-          tar -cvf artifact_19.tar .
-      - name: Upload darwin-x64-release/framework.zip
+          cd engine/src/out/release/framework
+          tar -cvf artifact_19.tar framework.zip
+      - name: Upload darwin-x64-release/mac_host_engine_global
         uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ steps.engine_content_hash.outputs.value }}_19
-          path: engine/src/out/release/framework/framework.zip/artifact_19.tar
+          path: engine/src/out/release/framework/artifact_19.tar
           retention-days: 1
   publish_artifacts:
     defaults:

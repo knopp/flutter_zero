@@ -42,19 +42,23 @@ class ArtifactPublisher {
   }) {
     // First tar the artifact to preserve attributes.
     final id = _count++;
+    final sourceDir = path.dirname(sourcePath);
+    final sourceName = path.basename(sourcePath);
+    final name = 'artifact_\${{ steps.engine_content_hash.outputs.value }}_$id';
     {
       final step = steps.beginMap('name', 'Tar $sourcePath');
       final run = step.beginMap('run', '|');
-      run.writeln('cd $sourcePath');
-      run.writeln('tar -cvf artifact_$id.tar .');
+      run.writeln('cd $sourceDir');
+      run.writeln('tar -cvf artifact_$id.tar $sourceName');
     }
-    final step = steps.beginMap('name', 'Upload $outputPath/${path.basename(sourcePath)}');
-    step.write('uses', 'actions/upload-artifact@v4');
-    final w = step.beginMap('with');
-    final name = 'artifact_\${{ steps.engine_content_hash.outputs.value }}_$id';
-    w.write('name', name);
-    w.write('path', '$sourcePath/artifact_$id.tar');
-    w.write('retention-days', '1');
+    {
+      final step = steps.beginMap('name', 'Upload $outputPath/$sourceJobName');
+      step.write('uses', 'actions/upload-artifact@v4');
+      final w = step.beginMap('with');
+      w.write('name', name);
+      w.write('path', '$sourceDir/artifact_$id.tar');
+      w.write('retention-days', '1');
+    }
     _dependentJobs.add(sourceJobName);
     _artifacts.add(
       _Artifact(

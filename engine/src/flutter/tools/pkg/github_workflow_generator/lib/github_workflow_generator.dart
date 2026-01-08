@@ -117,6 +117,7 @@ class ArtifactPublisher {
         final step = steps.beginMap('name', 'Extract ${artifact.outputPath}/$name');
         final run = step.beginMap('run', '|');
         run.writeln('tar -xvf artifact-${artifact.id}/artifact_${artifact.id}.tar -C artifact-${artifact.id}/');
+        run.writeln('rm artifact-${artifact.id}/artifact_${artifact.id}.tar');
       }
     }
     for (final artifact in _artifacts) {
@@ -270,6 +271,7 @@ class BuildConfigWriter {
           final step = steps.beginMap('name', 'Extract Artifacts from ${_nameForBuild(build)}');
           final run = step.beginMap('run', '|');
           run.writeln('tar -xvf ${_nameForBuild(build)}.tar');
+          run.writeln('rm ${_nameForBuild(build)}.tar');
         }
       }
       for (final generator in _config.generators) {

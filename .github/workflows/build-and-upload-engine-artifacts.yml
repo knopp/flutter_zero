@@ -1090,6 +1090,7 @@ jobs:
       - name: Extract Artifacts from mac_host_debug_framework
         run: |
           tar -xvf mac_host_debug_framework.tar
+          rm mac_host_debug_framework.tar
       - name: Download Artifacts from mac_host_debug
         uses: actions/download-artifact@v4
         with:
@@ -1097,6 +1098,7 @@ jobs:
       - name: Extract Artifacts from mac_host_debug
         run: |
           tar -xvf mac_host_debug.tar
+          rm mac_host_debug.tar
       - name: Download Artifacts from mac_host_debug_gen_snapshot
         uses: actions/download-artifact@v4
         with:
@@ -1104,6 +1106,7 @@ jobs:
       - name: Extract Artifacts from mac_host_debug_gen_snapshot
         run: |
           tar -xvf mac_host_debug_gen_snapshot.tar
+          rm mac_host_debug_gen_snapshot.tar
       - name: Download Artifacts from mac_host_profile
         uses: actions/download-artifact@v4
         with:
@@ -1111,6 +1114,7 @@ jobs:
       - name: Extract Artifacts from mac_host_profile
         run: |
           tar -xvf mac_host_profile.tar
+          rm mac_host_profile.tar
       - name: Download Artifacts from mac_host_profile_framework
         uses: actions/download-artifact@v4
         with:
@@ -1118,6 +1122,7 @@ jobs:
       - name: Extract Artifacts from mac_host_profile_framework
         run: |
           tar -xvf mac_host_profile_framework.tar
+          rm mac_host_profile_framework.tar
       - name: Download Artifacts from mac_host_profile_gen_snapshot
         uses: actions/download-artifact@v4
         with:
@@ -1125,6 +1130,7 @@ jobs:
       - name: Extract Artifacts from mac_host_profile_gen_snapshot
         run: |
           tar -xvf mac_host_profile_gen_snapshot.tar
+          rm mac_host_profile_gen_snapshot.tar
       - name: Download Artifacts from mac_host_release
         uses: actions/download-artifact@v4
         with:
@@ -1132,6 +1138,7 @@ jobs:
       - name: Extract Artifacts from mac_host_release
         run: |
           tar -xvf mac_host_release.tar
+          rm mac_host_release.tar
       - name: Download Artifacts from mac_host_release_framework
         uses: actions/download-artifact@v4
         with:
@@ -1139,6 +1146,7 @@ jobs:
       - name: Extract Artifacts from mac_host_release_framework
         run: |
           tar -xvf mac_host_release_framework.tar
+          rm mac_host_release_framework.tar
       - name: Download Artifacts from mac_host_release_gen_snapshot
         uses: actions/download-artifact@v4
         with:
@@ -1146,6 +1154,7 @@ jobs:
       - name: Extract Artifacts from mac_host_release_gen_snapshot
         run: |
           tar -xvf mac_host_release_gen_snapshot.tar
+          rm mac_host_release_gen_snapshot.tar
       - name: Download Artifacts from mac_debug_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1153,6 +1162,7 @@ jobs:
       - name: Extract Artifacts from mac_debug_arm64
         run: |
           tar -xvf mac_debug_arm64.tar
+          rm mac_debug_arm64.tar
       - name: Download Artifacts from mac_debug_framework_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1160,6 +1170,7 @@ jobs:
       - name: Extract Artifacts from mac_debug_framework_arm64
         run: |
           tar -xvf mac_debug_framework_arm64.tar
+          rm mac_debug_framework_arm64.tar
       - name: Download Artifacts from mac_debug_gen_snapshot_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1167,6 +1178,7 @@ jobs:
       - name: Extract Artifacts from mac_debug_gen_snapshot_arm64
         run: |
           tar -xvf mac_debug_gen_snapshot_arm64.tar
+          rm mac_debug_gen_snapshot_arm64.tar
       - name: Download Artifacts from mac_profile_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1174,6 +1186,7 @@ jobs:
       - name: Extract Artifacts from mac_profile_arm64
         run: |
           tar -xvf mac_profile_arm64.tar
+          rm mac_profile_arm64.tar
       - name: Download Artifacts from mac_profile_framework_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1181,6 +1194,7 @@ jobs:
       - name: Extract Artifacts from mac_profile_framework_arm64
         run: |
           tar -xvf mac_profile_framework_arm64.tar
+          rm mac_profile_framework_arm64.tar
       - name: Download Artifacts from mac_profile_gen_snapshot_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1188,6 +1202,7 @@ jobs:
       - name: Extract Artifacts from mac_profile_gen_snapshot_arm64
         run: |
           tar -xvf mac_profile_gen_snapshot_arm64.tar
+          rm mac_profile_gen_snapshot_arm64.tar
       - name: Download Artifacts from mac_release_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1195,6 +1210,7 @@ jobs:
       - name: Extract Artifacts from mac_release_arm64
         run: |
           tar -xvf mac_release_arm64.tar
+          rm mac_release_arm64.tar
       - name: Download Artifacts from mac_release_framework_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1202,6 +1218,7 @@ jobs:
       - name: Extract Artifacts from mac_release_framework_arm64
         run: |
           tar -xvf mac_release_framework_arm64.tar
+          rm mac_release_framework_arm64.tar
       - name: Download Artifacts from mac_release_gen_snapshot_arm64
         uses: actions/download-artifact@v4
         with:
@@ -1209,6 +1226,7 @@ jobs:
       - name: Extract Artifacts from mac_release_gen_snapshot_arm64
         run: |
           tar -xvf mac_release_gen_snapshot_arm64.tar
+          rm mac_release_gen_snapshot_arm64.tar
       - name: Run generator Debug-FlutterEmbedder.framework
         run: |
           cd engine/src
@@ -1431,6 +1449,7 @@ jobs:
       - name: Extract darwin-x64/artifacts.zip
         run: |
           tar -xvf artifact-0/artifact_0.tar -C artifact-0/
+          rm artifact-0/artifact_0.tar
       - name: Download /dart-sdk-darwin-x64.zip
         uses: actions/download-artifact@v4
         with:
@@ -1439,6 +1458,7 @@ jobs:
       - name: Extract /dart-sdk-darwin-x64.zip
         run: |
           tar -xvf artifact-1/artifact_1.tar -C artifact-1/
+          rm artifact-1/artifact_1.tar
       - name: Download darwin-x64-profile/artifacts.zip
         uses: actions/download-artifact@v4
         with:
@@ -1447,6 +1467,7 @@ jobs:
       - name: Extract darwin-x64-profile/artifacts.zip
         run: |
           tar -xvf artifact-2/artifact_2.tar -C artifact-2/
+          rm artifact-2/artifact_2.tar
       - name: Download darwin-x64-release/artifacts.zip
         uses: actions/download-artifact@v4
         with:
@@ -1455,6 +1476,7 @@ jobs:
       - name: Extract darwin-x64-release/artifacts.zip
         run: |
           tar -xvf artifact-3/artifact_3.tar -C artifact-3/
+          rm artifact-3/artifact_3.tar
       - name: Download darwin-x64/font-subset.zip
         uses: actions/download-artifact@v4
         with:
@@ -1463,6 +1485,7 @@ jobs:
       - name: Extract darwin-x64/font-subset.zip
         run: |
           tar -xvf artifact-4/artifact_4.tar -C artifact-4/
+          rm artifact-4/artifact_4.tar
       - name: Download darwin-arm64/artifacts.zip
         uses: actions/download-artifact@v4
         with:
@@ -1471,6 +1494,7 @@ jobs:
       - name: Extract darwin-arm64/artifacts.zip
         run: |
           tar -xvf artifact-5/artifact_5.tar -C artifact-5/
+          rm artifact-5/artifact_5.tar
       - name: Download /dart-sdk-darwin-arm64.zip
         uses: actions/download-artifact@v4
         with:
@@ -1479,6 +1503,7 @@ jobs:
       - name: Extract /dart-sdk-darwin-arm64.zip
         run: |
           tar -xvf artifact-6/artifact_6.tar -C artifact-6/
+          rm artifact-6/artifact_6.tar
       - name: Download darwin-arm64-profile/artifacts.zip
         uses: actions/download-artifact@v4
         with:
@@ -1487,6 +1512,7 @@ jobs:
       - name: Extract darwin-arm64-profile/artifacts.zip
         run: |
           tar -xvf artifact-7/artifact_7.tar -C artifact-7/
+          rm artifact-7/artifact_7.tar
       - name: Download darwin-arm64/font-subset.zip
         uses: actions/download-artifact@v4
         with:
@@ -1495,6 +1521,7 @@ jobs:
       - name: Extract darwin-arm64/font-subset.zip
         run: |
           tar -xvf artifact-8/artifact_8.tar -C artifact-8/
+          rm artifact-8/artifact_8.tar
       - name: Download darwin-arm64-release/artifacts.zip
         uses: actions/download-artifact@v4
         with:
@@ -1503,6 +1530,7 @@ jobs:
       - name: Extract darwin-arm64-release/artifacts.zip
         run: |
           tar -xvf artifact-9/artifact_9.tar -C artifact-9/
+          rm artifact-9/artifact_9.tar
       - name: Download darwin-x64/FlutterEmbedder.framework.zip
         uses: actions/download-artifact@v4
         with:
@@ -1511,6 +1539,7 @@ jobs:
       - name: Extract darwin-x64/FlutterEmbedder.framework.zip
         run: |
           tar -xvf artifact-10/artifact_10.tar -C artifact-10/
+          rm artifact-10/artifact_10.tar
       - name: Download darwin-x64/FlutterMacOS.framework.zip
         uses: actions/download-artifact@v4
         with:
@@ -1519,6 +1548,7 @@ jobs:
       - name: Extract darwin-x64/FlutterMacOS.framework.zip
         run: |
           tar -xvf artifact-11/artifact_11.tar -C artifact-11/
+          rm artifact-11/artifact_11.tar
       - name: Download darwin-x64-profile/FlutterMacOS.framework.zip
         uses: actions/download-artifact@v4
         with:
@@ -1527,6 +1557,7 @@ jobs:
       - name: Extract darwin-x64-profile/FlutterMacOS.framework.zip
         run: |
           tar -xvf artifact-12/artifact_12.tar -C artifact-12/
+          rm artifact-12/artifact_12.tar
       - name: Download darwin-x64-release/FlutterMacOS.framework.zip
         uses: actions/download-artifact@v4
         with:
@@ -1535,6 +1566,7 @@ jobs:
       - name: Extract darwin-x64-release/FlutterMacOS.framework.zip
         run: |
           tar -xvf artifact-13/artifact_13.tar -C artifact-13/
+          rm artifact-13/artifact_13.tar
       - name: Download darwin-x64/gen_snapshot.zip
         uses: actions/download-artifact@v4
         with:
@@ -1543,6 +1575,7 @@ jobs:
       - name: Extract darwin-x64/gen_snapshot.zip
         run: |
           tar -xvf artifact-14/artifact_14.tar -C artifact-14/
+          rm artifact-14/artifact_14.tar
       - name: Download darwin-x64-profile/gen_snapshot.zip
         uses: actions/download-artifact@v4
         with:
@@ -1551,6 +1584,7 @@ jobs:
       - name: Extract darwin-x64-profile/gen_snapshot.zip
         run: |
           tar -xvf artifact-15/artifact_15.tar -C artifact-15/
+          rm artifact-15/artifact_15.tar
       - name: Download darwin-x64-release/gen_snapshot.zip
         uses: actions/download-artifact@v4
         with:
@@ -1559,6 +1593,7 @@ jobs:
       - name: Extract darwin-x64-release/gen_snapshot.zip
         run: |
           tar -xvf artifact-16/artifact_16.tar -C artifact-16/
+          rm artifact-16/artifact_16.tar
       - name: Download darwin-x64/framework.zip
         uses: actions/download-artifact@v4
         with:
@@ -1567,6 +1602,7 @@ jobs:
       - name: Extract darwin-x64/framework.zip
         run: |
           tar -xvf artifact-17/artifact_17.tar -C artifact-17/
+          rm artifact-17/artifact_17.tar
       - name: Download darwin-x64-profile/framework.zip
         uses: actions/download-artifact@v4
         with:
@@ -1575,6 +1611,7 @@ jobs:
       - name: Extract darwin-x64-profile/framework.zip
         run: |
           tar -xvf artifact-18/artifact_18.tar -C artifact-18/
+          rm artifact-18/artifact_18.tar
       - name: Download darwin-x64-release/framework.zip
         uses: actions/download-artifact@v4
         with:
@@ -1583,6 +1620,7 @@ jobs:
       - name: Extract darwin-x64-release/framework.zip
         run: |
           tar -xvf artifact-19/artifact_19.tar -C artifact-19/
+          rm artifact-19/artifact_19.tar
       - name: Publish darwin-x64/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:

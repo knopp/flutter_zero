@@ -45,14 +45,15 @@ class ArtifactPublisher {
     {
       final step = steps.beginMap('name', 'Tar $sourcePath');
       final run = step.beginMap('run', '|');
-      run.writeln('tar -cvf artifact_$id.tar $sourcePath');
+      run.writeln('cd $sourcePath');
+      run.writeln('tar -cvf artifact_$id.tar .');
     }
     final step = steps.beginMap('name', 'Upload $outputPath/${path.basename(sourcePath)}');
     step.write('uses', 'actions/upload-artifact@v4');
     final w = step.beginMap('with');
     final name = 'artifact_\${{ steps.engine_content_hash.outputs.value }}_$id';
     w.write('name', name);
-    w.write('path', 'artifact_$id.tar');
+    w.write('path', '$sourcePath/artifact_$id.tar');
     w.write('retention-days', '1');
     _dependentJobs.add(sourceJobName);
     _artifacts.add(
@@ -211,14 +212,14 @@ class BuildConfigWriter {
         {
           final step = steps.beginMap('name', 'Tar build files');
           final run = step.beginMap('run', '|');
-          run.writeln('tar -cvf engine/src/out/${build.name}/archive.tar engine/src/out/${build.name}');
+          run.writeln('tar -cvf ${_nameForBuild(build)}.tar engine/src/out/${build.name}');
         }
         {
           final step = steps.beginMap('name', 'Upload build files');
           step.write('uses', 'actions/upload-artifact@v4');
           final w = step.beginMap('with');
           w.write('name', 'artifacts-${_nameForBuild(build)}-\${{ steps.engine_content_hash.outputs.value }}');
-          w.write('path', 'engine/src/out/${build.name}/archive.tar');
+          w.write('path', '${_nameForBuild(build)}.tar');
           w.write('retention-days', '1');
         }
       }
@@ -260,13 +261,11 @@ class BuildConfigWriter {
           step.write('uses', 'actions/download-artifact@v4');
           final w = step.beginMap('with');
           w.write('name', 'artifacts-${_nameForBuild(build)}-\${{ steps.engine_content_hash.outputs.value }}');
-          w.write('path', 'engine/src/out/${build.name}');
         }
         {
           final step = steps.beginMap('name', 'Extract Artifacts from ${_nameForBuild(build)}');
           final run = step.beginMap('run', '|');
-          run.writeln('tar -xvf engine/src/out/${build.name}/archive.tar -C engine/src/out/${build.name}');
-          run.writeln('rm engine/src/out/${build.name}/archive.tar');
+          run.writeln('tar -xvf ${_nameForBuild(build)}.tar');
         }
       }
       for (final generator in _config.generators) {

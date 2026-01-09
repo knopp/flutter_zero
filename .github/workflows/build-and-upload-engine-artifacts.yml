@@ -1357,6 +1357,12 @@ jobs:
             --x64-out-dir \
             out/ci/host_profile_framework \
             --zip
+      - name: Run generator Verify-export-symbols
+        run: |
+          cd engine/src
+          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+            src/out/ci \
+            src/flutter/buildtools
       - name: Run generator Debug-gen_snapshots
         run: |
           cd engine/src
@@ -1887,6 +1893,12 @@ jobs:
             out/ci/ios_debug_sim_arm64 \
             --dsym \
             --strip
+      - name: Run generator Verify-export-symbols-release-binaries
+        run: |
+          cd engine/src
+          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+            src/out/ci \
+            src/flutter/buildtools
       - name: Tar engine/src/out/debug/artifacts.zip
         run: |
           cd engine/src/out/debug
@@ -2595,11 +2607,22 @@ jobs:
         run: |
           tar -xvf linux_host_release.tar
           rm linux_host_release.tar
+      - name: Run generator Verify-export-symbols-release-binaries
+        run: |
+          cd engine/src
+          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+            src/out/ci \
+            src/flutter/buildtools
       - name: Run generator api-documentation
         run: |
           cd engine/src
           flutter/tools/gen_docs.py \
             out/docs
+      - name: Run generator engine-stamp
+        run: |
+          cd engine/src
+          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/tools/engine_tool/bin/et.dart \
+            stamp
       - name: Tar engine/src/out/docs/ios-docs.zip
         run: |
           cd engine/src/out/docs
@@ -4621,6 +4644,12 @@ jobs:
         run: |
           tar -xvf linux_android_release_riscv64.tar
           rm linux_android_release_riscv64.tar
+      - name: Run generator Verify-export-symbols-release-binaries
+        run: |
+          cd engine/src
+          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+            src/out/ci \
+            src/flutter/buildtools
   linux_android_debug:
     runs-on: ubuntu-latest
     defaults:
@@ -5197,6 +5226,12 @@ jobs:
         run: |
           tar -xvf linux_android_debug_riscv64.tar
           rm linux_android_debug_riscv64.tar
+      - name: Run generator Verify-export-symbols-release-binaries
+        run: |
+          cd engine/src
+          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+            src/out/ci \
+            src/flutter/buildtools
   linux_wasm_release:
     runs-on: ubuntu-latest
     defaults:

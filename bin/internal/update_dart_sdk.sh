@@ -123,7 +123,7 @@ if [ ! -f "$ENGINE_STAMP" ] || [ "$ENGINE_VERSION" != `cat "$ENGINE_STAMP"` ]; t
     FIND=find
   fi
 
-  DART_SDK_BASE_URL="${FLUTTER_STORAGE_BASE_URL:-https://engine.flutter0.dev}${ENGINE_REALM:+/$ENGINE_REALM}"
+  DART_SDK_BASE_URL="${FLUTTER_STORAGE_BASE_URL:-https://storage.googleapis.com}${ENGINE_REALM:+/$ENGINE_REALM}"
   DART_SDK_URL="$DART_SDK_BASE_URL/flutter_infra_release/flutter/$ENGINE_VERSION/$DART_ZIP_NAME"
 
   # if the sdk path exists, copy it to a temporary location

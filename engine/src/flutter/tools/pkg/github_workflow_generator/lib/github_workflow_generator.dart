@@ -130,10 +130,18 @@ class ArtifactPublisher {
       w.write('r2-secret-access-key', r'${{ secrets.R2_SECRET_ACCESS_KEY }}');
       w.write('r2-bucket', r'${{ env.R2_BUCKET }}');
       w.write('source-dir', 'artifact-${artifact.id}/');
-      w.write(
-        'destination-dir',
-        'flutter_infra_release/flutter/\${{ steps.engine_content_hash.outputs.value }}/${artifact.outputPath}',
-      );
+      if (name.contains('flutter.io')) {
+        // android
+        w.write(
+          'destination-dir',
+          './',
+        );
+      } else {
+        w.write(
+          'destination-dir',
+          'flutter_infra_release/flutter/\${{ steps.engine_content_hash.outputs.value }}/${artifact.outputPath}',
+        );
+      }
     }
   }
 

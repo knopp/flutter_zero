@@ -758,4 +758,19 @@ action("abi_jars") {
       rebase_path("${hash_base_name}.${extension}"),
     ]
   }
+
+  hash_base_name2 =
+      "$root_out_dir/zip_archives/download.flutter.io/io/flutter/" +
+      "${artifact_id}/1.0.0-${content_hash}/" +
+      "${artifact_id}-1.0.0-${content_hash}"
+  foreach(source, hash_sources) {
+    extension = get_path_info(source, "extension")
+    name = get_path_info(source, "name")
+    outputs += [ "${hash_base_name2}.${extension}" ]
+    args += [
+      "-i",
+      rebase_path(source),
+      rebase_path("${hash_base_name2}.${extension}"),
+    ]
+  }
 }

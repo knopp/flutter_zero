@@ -2,7 +2,7 @@
 
 set -e
 
-REPO_PATH=$(dirname "$(readlink -f "$0")")
+REPO_PATH=$(dirname "$(readlink -f "$0")")/..
 
 mkdir -p "$REPO_PATH/_tmp";
 cd "$REPO_PATH/_tmp";

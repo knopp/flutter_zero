@@ -461,7 +461,7 @@ if (is_ios) {
     is_clang = true
 
     sysroot_rel = rebase_path(ios_sdk_path, root_build_dir)
-    sysroot_flags = "-isysroot $sysroot_rel -mios-simulator-version-min=$ios_deployment_target"
+    sysroot_flags = "-isysroot $sysroot_rel"
   }
 
   # Toolchain used for iOS simulator targets (x64).
@@ -478,7 +478,7 @@ if (is_ios) {
     is_clang = true
 
     sysroot_rel = rebase_path(ios_sdk_path, root_build_dir)
-    sysroot_flags = "-isysroot $sysroot_rel -mios-simulator-version-min=$ios_deployment_target"
+    sysroot_flags = "-isysroot $sysroot_rel"
   }
 }
 

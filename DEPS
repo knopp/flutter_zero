@@ -446,7 +446,7 @@ deps = {
   Var('flutter_git') + '/third_party/ocmock' + '@' +  Var('ocmock_rev'),
 
   'engine/src/flutter/third_party/libpng':
-  Var('flutter_git') + '/third_party/libpng' + '@' + 'de36b892e921c684ef718fec24739ae9bb49c977',
+  Var('flutter_git') + '/third_party/libpng' + '@' + 'f139fd5d80944f5453b079672e50f32ca98ef076',
 
   'engine/src/flutter/third_party/zlib':
   Var('chromium_git') + '/chromium/src/third_party/zlib.git' + '@' + '7d77fb7fd66d8a5640618ad32c71fdeb7d3e02df',
@@ -607,7 +607,7 @@ deps = {
         'version': Var('clang_version'),
       }
     ],
-    'condition': 'host_os == "mac"', # On ARM64 Macs too because Goma doesn't support the host-arm64 toolchain.
+    'condition': 'host_os == "mac" and host_cpu == "x64"',
     'dep_type': 'cipd',
   },
 
@@ -629,7 +629,7 @@ deps = {
         'version': Var('clang_version'),
       }
     ],
-    'condition': 'host_os == "linux" or host_os == "mac"',
+    'condition': 'host_os == "linux" and host_cpu == "x64"',
     'dep_type': 'cipd',
   },
 

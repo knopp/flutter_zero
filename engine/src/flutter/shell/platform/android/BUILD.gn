@@ -85,9 +85,7 @@ source_set("flutter_shell_native_src") {
 
   defines = []
 
-  libs = [
-    "android",
-  ]
+  libs = [ "android" ]
 }
 
 action("gen_android_build_config_java") {
@@ -638,9 +636,10 @@ action("embedding_jars") {
 
   outputs = []
   args = []
-  base_name = "$root_out_dir/zip_archives/download.flutter.io/io/flutter/" +
-              "flutter_embedding_$flutter_runtime_mode/1.0.0-$engine_version/" +
-              "flutter_embedding_$flutter_runtime_mode-1.0.0-${engine_version}"
+  base_name =
+      "$root_out_dir/zip_archives/download.flutter.io/io/flutter/" +
+      "flutter_embedding_$flutter_runtime_mode/1.0.0-${engine_version}/" +
+      "flutter_embedding_$flutter_runtime_mode-1.0.0-${engine_version}"
   foreach(source, base_sources) {
     extension = get_path_info(source, "extension")
     name = get_path_info(source, "name")
@@ -700,6 +699,36 @@ action("embedding_jars") {
       ]
     }
   }
+
+  hash_base_name2 =
+      "$root_out_dir/zip_archives/download.flutter.io/io/flutter/" +
+      "flutter_embedding_$flutter_runtime_mode/1.0.0-${content_hash}/" +
+      "flutter_embedding_$flutter_runtime_mode-1.0.0-${content_hash}"
+  foreach(source, hash_sources) {
+    extension = get_path_info(source, "extension")
+    name = get_path_info(source, "name")
+    if (extension == "jar") {
+      outputs += [
+        "${hash_base_name2}.jar",
+        "${hash_base_name2}-sources.jar",
+      ]
+      args += [
+        "-i",
+        "${name}.jar",
+        rebase_path("${hash_base_name2}.jar"),
+        "-i",
+        "${name}-sources.jar",
+        rebase_path("${hash_base_name2}-sources.jar"),
+      ]
+    } else {
+      outputs += [ "${hash_base_name2}.${extension}" ]
+      args += [
+        "-i",
+        rebase_path(source),
+        rebase_path("${hash_base_name2}.${extension}"),
+      ]
+    }
+  }
 }
 
 # Renames android artifacts and places them in the final
@@ -756,6 +785,21 @@ action("abi_jars") {
       "-i",
       rebase_path(source),
       rebase_path("${hash_base_name}.${extension}"),
+    ]
+  }
+
+  hash_base_name2 =
+      "$root_out_dir/zip_archives/download.flutter.io/io/flutter/" +
+      "${artifact_id}/1.0.0-${content_hash}/" +
+      "${artifact_id}-1.0.0-${content_hash}"
+  foreach(source, hash_sources) {
+    extension = get_path_info(source, "extension")
+    name = get_path_info(source, "name")
+    outputs += [ "${hash_base_name2}.${extension}" ]
+    args += [
+      "-i",
+      rebase_path(source),
+      rebase_path("${hash_base_name2}.${extension}"),
     ]
   }
 }

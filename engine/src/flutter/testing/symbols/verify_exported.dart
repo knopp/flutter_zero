@@ -39,15 +39,24 @@ void main(List<String> arguments) {
     final String engineCheckoutPath = Platform.environment['ENGINE_CHECKOUT_PATH']!;
     outPath = p.join(engineCheckoutPath, outPath);
   }
-  final String buildToolsPath = arguments.length == 1
+  String buildToolsPath = arguments.length == 1
       ? p.join(p.dirname(outPath), 'flutter', 'buildtools')
       : arguments[1];
+
+  if (p.isRelative(buildToolsPath)) {
+    if (!Platform.environment.containsKey('ENGINE_CHECKOUT_PATH')) {
+      print('ENGINE_CHECKOUT_PATH env variable is mandatory when using relative destination path');
+      exit(1);
+    }
+    final String engineCheckoutPath = Platform.environment['ENGINE_CHECKOUT_PATH']!;
+    buildToolsPath = p.join(engineCheckoutPath, buildToolsPath);
+  }
 
   String platform;
   if (Platform.isLinux) {
     platform = 'linux-x64';
   } else if (Platform.isMacOS) {
-    platform = 'mac-x64';
+    platform = 'mac-arm64';
   } else {
     throw UnimplementedError('Script only support running on Linux or MacOS.');
   }

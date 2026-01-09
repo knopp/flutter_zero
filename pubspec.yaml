@@ -3,6 +3,8 @@ name: _flutter_packages
 environment:
   sdk: ^3.9.0-0
 
+workspace:
+  - examples/hello_world
 
 dependencies:
   _discoveryapis_commons: 1.0.7

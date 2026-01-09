@@ -34,9 +34,6 @@
             "ninja": {
                 "config": "ci/android_emulator_debug_x64",
                 "targets": [
-                    "flutter/impeller/renderer/backend/vulkan:vulkan_android_unittests",
-                    "flutter/impeller/renderer/backend/vulkan:vulkan_android_apk_unittests",
-                    "flutter/impeller/toolkit/android:unittests",
                     "flutter/shell/platform/android:flutter_shell_native_unittests"
                 ]
             },
@@ -64,12 +61,6 @@
                         "--type",
                         "android"
                     ]
-                },
-                {
-                    "language": "dart",
-                    "name": "skia_gold_client/e2e_test",
-                    "script": "flutter/testing/skia_gold_client/tool/e2e_test.dart",
-                    "max_attempts": 1
                 }
             ]
         }

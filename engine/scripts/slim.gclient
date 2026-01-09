@@ -13,8 +13,10 @@ solutions = [
     "url": "https://github.com/knopp/flutter_zero.git",
 
     # Uncomment the custom_vars section below if you plan to build the web engine.
-    # "custom_vars": {
-    #   "download_emsdk": True,
-    # },
+    "custom_vars": {
+      "download_esbuild": False,
+      "download_android_deps" : False,
+      "download_jdk": False,
+    },
   },
 ]

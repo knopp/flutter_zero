@@ -6,6 +6,7 @@
 
 #include <sys/stat.h>
 
+#include <algorithm>
 #include <sstream>
 #include <vector>
 

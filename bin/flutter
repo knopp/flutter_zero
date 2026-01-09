@@ -21,7 +21,9 @@ set -e
 # Needed because if it is set, cd may print the path it changed to.
 unset CDPATH
 
-export FLUTTER_STORAGE_BASE_URL=https://engine.flutter0.dev
+if [ -z "${FLUTTER_STORAGE_BASE_URL}" ]; then
+  export FLUTTER_STORAGE_BASE_URL="https://engine.flutter0.dev"
+fi
 
 # On Mac OS, readlink -f doesn't work, so follow_links traverses the path one
 # link at a time, and then cds into the link destination and find out where it

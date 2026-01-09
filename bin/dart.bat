@@ -13,6 +13,10 @@ REM --------------------------------------------------------------------------
 
 SETLOCAL
 
+IF NOT DEFINED FLUTTER_STORAGE_BASE_URL (
+    SET FLUTTER_STORAGE_BASE_URL=https://engine.flutter0.dev
+)
+
 FOR %%i IN ("%~dp0..") DO SET FLUTTER_ROOT=%%~fi
 
 REM Detect which PowerShell executable is available on the host

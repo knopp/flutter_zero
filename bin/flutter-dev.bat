@@ -13,7 +13,9 @@ REM --------------------------------------------------------------------------
 
 SETLOCAL
 
-SET FLUTTER_STORAGE_BASE_URL=https://engine.flutter0.dev
+IF NOT DEFINED FLUTTER_STORAGE_BASE_URL (
+    SET FLUTTER_STORAGE_BASE_URL=https://engine.flutter0.dev
+)
 
 REM This is a helper script for development purposes. It runs the Flutter tool
 REM from source code directly, without using the prebuilt snapshot. This is

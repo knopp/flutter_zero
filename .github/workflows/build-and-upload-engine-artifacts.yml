@@ -1360,7 +1360,7 @@ jobs:
       - name: Run generator Verify-export-symbols
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
       - name: Run generator Debug-gen_snapshots
@@ -1896,7 +1896,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
       - name: Tar engine/src/out/debug/artifacts.zip
@@ -2610,7 +2610,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
       - name: Run generator api-documentation
@@ -2621,7 +2621,7 @@ jobs:
       - name: Run generator engine-stamp
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/tools/engine_tool/bin/et.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/tools/engine_tool/bin/et.dart \
             stamp
       - name: Tar engine/src/out/docs/ios-docs.zip
         run: |
@@ -4647,7 +4647,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
   linux_android_debug:
@@ -5229,7 +5229,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=1a50ee5c0ff85b3f8cc8adeaf1977503cc51738d ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
   linux_wasm_release:

@@ -380,7 +380,9 @@ class BuildConfigWriter {
 
   String _taskLauncherScript(String script, {required String language}) {
     if (language == 'dart') {
-      return '../../bin/dart $script';
+      // Use existing prebuilt engine version for the Dart SDK, as this is
+      // executed before publishing new engine artifacts.
+      return 'FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart $script';
     } else if (language == 'python3') {
       return 'python3 $script';
     } else if (language == 'bash' || language == '<undef>') {

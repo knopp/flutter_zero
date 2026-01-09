@@ -80,7 +80,9 @@ class ArtifactPublisher {
     run.writeln('shell: bash');
     final needs = job.beginArray('needs');
     _dependentJobs.forEach(needs.writeln);
+    needs.writeln('guard');
     job.write('runs-on', 'ubuntu-latest');
+    job.write('if', r"${{ needs.guard.outputs.should_run == 'true' }}");
     final steps = job.beginArray('steps');
     {
       final step = steps.beginMap('name', 'Checkout the repository');
@@ -199,6 +201,9 @@ class BuildConfigWriter {
       final defaults = job.beginMap('defaults');
       final run = defaults.beginMap('run');
       run.writeln('shell: bash');
+      final needs = job.beginArray('needs');
+      needs.writeln('guard');
+      job.write('if', r"${{ needs.guard.outputs.should_run == 'true' }}");
       final steps = job.beginArray('steps');
 
       _writePrelude(steps);
@@ -257,16 +262,18 @@ class BuildConfigWriter {
     }
     if (_config.generators.isNotEmpty || _config.archives.isNotEmpty) {
       final globalJobName = '${path.basenameWithoutExtension(_config.path)}_global';
-      final jobSection = _jobsSections.beginMap(globalJobName);
-      jobSection.write('runs-on', _getRunnerForBuilder(_config.builds.first));
-      final needs = jobSection.beginArray('needs');
+      final job = _jobsSections.beginMap(globalJobName);
+      job.write('runs-on', _getRunnerForBuilder(_config.builds.first));
+      final needs = job.beginArray('needs');
       for (final build in _config.builds) {
         needs.writeln(_nameForBuild(build));
       }
-      final defaults = jobSection.beginMap('defaults');
+      needs.writeln('guard');
+      final defaults = job.beginMap('defaults');
       final run = defaults.beginMap('run');
       run.writeln('shell: bash');
-      final steps = jobSection.beginArray('steps');
+      job.write('if', r"${{ needs.guard.outputs.should_run == 'true' }}");
+      final steps = job.beginArray('steps');
       _writePrelude(steps);
       for (final build in _config.builds) {
         final step = steps.beginMap('name', 'Download Artifacts from ${_nameForBuild(build)}');
@@ -457,6 +464,44 @@ class BuildConfigWriter {
   final ArtifactPublisher _artifactPublisher;
 }
 
+void _writeGuardJob(YamlWriterSection jobsSection) {
+  final job = jobsSection.beginMap('guard');
+  job.write('runs-on', 'ubuntu-latest');
+  final outputs = job.beginMap('outputs');
+  outputs.write('should_run', r'${{ steps.check.outputs.should_run }}');
+  final steps = job.beginArray('steps');
+  {
+    final step = steps.beginMap('name', 'Checkout the repository');
+    step.write('uses', 'actions/checkout@v4');
+    final w = step.beginMap('with');
+    w.write('path', "''");
+  }
+  {
+    final step = steps.beginMap('name', 'Generate engine content hash');
+    step.write('id', 'engine_content_hash');
+    final run = step.beginMap('run', '|');
+    // run.writeln(r'engine_content_hash=$(bin/internal/content_aware_hash.sh)');
+    // run.writeln(r'echo "::notice:: Engine content hash: ${engine_content_hash}"');
+    // run.writeln(r'echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT');
+    run.writeln(r'echo value=6381a0b9ab1f51f91b6c1bd8d35a1ab4b33efca8 >> $GITHUB_OUTPUT');
+  }
+  {
+    final check = steps.beginMap('name', 'Check if engine.stamp exists');
+    check.write('id', 'check');
+    final run = check.beginMap('run', '|');
+    run.writeln(
+      r'URL="https://engine.flutter0.dev/flutter_infra_release/flutter/${{ steps.engine_content_hash.outputs.value }}/engine_stamp.json"',
+    );
+    run.writeln(r'if curl --head --silent --fail "$URL" > /dev/null; then');
+    run.writeln(r'  echo "Engine stamp exists at $URL"');
+    run.writeln(r'  echo "should_run=false" >> $GITHUB_OUTPUT');
+    run.writeln(r'else');
+    run.writeln(r'  echo "Engine stamp does not exist at $URL"');
+    run.writeln(r'  echo "should_run=true" >> $GITHUB_OUTPUT');
+    run.writeln(r'fi');
+  }
+}
+
 void main(List<String> arguments) {
   final parser = ArgParser();
   parser.addMultiOption(
@@ -504,6 +549,8 @@ void main(List<String> arguments) {
   env.write('ENGINE_CHECKOUT_PATH', r'${{ github.workspace }}/engine');
 
   final jobs = root.beginMap('jobs');
+
+  _writeGuardJob(jobs);
 
   final artifactPublisher = ArtifactPublisher();
 

@@ -16,6 +16,8 @@ SETLOCAL
 REM To debug the tool, you can uncomment the following line to enable debug mode:
 REM SET FLUTTER_TOOL_ARGS="--enable-asserts %FLUTTER_TOOL_ARGS%"
 
+SET FLUTTER_STORAGE_BASE_URL=https://engine.flutter0.dev
+
 FOR %%i IN ("%~dp0..") DO SET FLUTTER_ROOT=%%~fi
 
 REM If available, add location of bundled mingit to PATH

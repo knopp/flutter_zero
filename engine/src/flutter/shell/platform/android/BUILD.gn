@@ -638,7 +638,7 @@ action("embedding_jars") {
   args = []
   base_name =
       "$root_out_dir/zip_archives/download.flutter.io/io/flutter/" +
-      "flutter_embedding_$flutter_runtime_mode/1.0.0-$engine_vxersion/" +
+      "flutter_embedding_$flutter_runtime_mode/1.0.0-${engine_version}/" +
       "flutter_embedding_$flutter_runtime_mode-1.0.0-${engine_version}"
   foreach(source, base_sources) {
     extension = get_path_info(source, "extension")

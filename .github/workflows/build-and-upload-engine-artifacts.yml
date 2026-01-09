@@ -1,7 +1,9 @@
-# This file is generated. Do not edit directly.
+# This file is generated through `scripts/update_github_workflow.sh.`
+# Do not edit directly.
 name: Engine Artifacts
 on:
-  pull_request:
+  push:
+    branches: ["master"]
 env:
   DEPOT_TOOLS_WIN_TOOLCHAIN: 0
   FLUTTER_PREBUILT_DART_SDK: 1
@@ -20,7 +22,9 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          echo value=6381a0b9ab1f51f91b6c1bd8d35a1ab4b33efca8 >> $GITHUB_OUTPUT
+          engine_content_hash=$(bin/internal/content_aware_hash.sh)
+          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Check if engine.stamp exists
         id: check
         run: |

@@ -480,10 +480,9 @@ void _writeGuardJob(YamlWriterSection jobsSection) {
     final step = steps.beginMap('name', 'Generate engine content hash');
     step.write('id', 'engine_content_hash');
     final run = step.beginMap('run', '|');
-    // run.writeln(r'engine_content_hash=$(bin/internal/content_aware_hash.sh)');
-    // run.writeln(r'echo "::notice:: Engine content hash: ${engine_content_hash}"');
-    // run.writeln(r'echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT');
-    run.writeln(r'echo value=6381a0b9ab1f51f91b6c1bd8d35a1ab4b33efca8 >> $GITHUB_OUTPUT');
+    run.writeln(r'engine_content_hash=$(bin/internal/content_aware_hash.sh)');
+    run.writeln(r'echo "::notice:: Engine content hash: ${engine_content_hash}"');
+    run.writeln(r'echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT');
   }
   {
     final check = steps.beginMap('name', 'Check if engine.stamp exists');
@@ -536,11 +535,13 @@ void main(List<String> arguments) {
 
   final yamlWriter = YamlWriter();
   final root = yamlWriter.root;
-  root.writeln('# This file is generated. Do not edit directly.');
+  root.writeln('# This file is generated through `scripts/update_github_workflow.sh.`');
+  root.writeln('# Do not edit directly.');
   root.write('name', 'Engine Artifacts');
 
   final on = root.beginMap('on');
-  on.beginMap('pull_request');
+  final push = on.beginMap('push');
+  push.write('branches', '["master"]');
 
   final env = root.beginMap('env');
   env.write('DEPOT_TOOLS_WIN_TOOLCHAIN', '0');

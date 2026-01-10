@@ -85,24 +85,10 @@ class ArtifactPublisher {
     job.write('if', r"${{ needs.guard.outputs.should_run == 'true' }}");
     final steps = job.beginArray('steps');
     {
-      final step = steps.beginMap('name', 'Checkout the repository');
-      step.write('uses', 'actions/checkout@v4');
-      final w = step.beginMap('with');
-      w.write('path', "''");
-    }
-    {
-      final step = steps.beginMap('name', 'Set up depot_tools');
-      final run = step.beginMap('run', '|');
-      run.writeln(r'git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $HOME/depot_tools');
-      run.writeln('# Append depot_tools to the PATH for subsequent steps');
-      run.writeln(r'echo "$HOME/depot_tools" >> $GITHUB_PATH');
-    }
-    {
-      final step = steps.beginMap('name', 'Generate engine content hash');
+      final step = steps.beginMap('name', 'Expose engine content hash');
       step.write('id', 'engine_content_hash');
       final run = step.beginMap('run', '|');
-      run.writeln(r'engine_content_hash=$(bin/internal/content_aware_hash.sh)');
-      run.writeln(r'echo "::notice:: Engine content hash: ${engine_content_hash}"');
+      run.writeln(r'engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}');
       run.writeln(r'echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT');
     }
     for (final artifact in _artifacts) {
@@ -144,6 +130,26 @@ class ArtifactPublisher {
           'flutter_infra_release/flutter/\${{ steps.engine_content_hash.outputs.value }}/${artifact.outputPath}',
         );
       }
+    }
+    {
+      final step = steps.beginMap('name', 'Create latest_content_hash.txt');
+      final run = step.beginMap('run', '|');
+      run.writeln(r'mkdir -p latest_content_hash');
+      run.writeln(r'echo "${{ needs.guard.outputs.engine_content_hash }}" > latest_content_hash/latest_content_hash.txt');
+    }
+    {
+      final step = steps.beginMap('name', 'Publish latest_content_hash.txt');
+      step.write('uses', 'ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c');
+      final w = step.beginMap('with');
+      w.write('r2-account-id', r'${{ secrets.R2_ACCOUNT_ID }}');
+      w.write('r2-access-key-id', r'${{ secrets.R2_ACCESS_KEY_ID }}');
+      w.write('r2-secret-access-key', r'${{ secrets.R2_SECRET_ACCESS_KEY }}');
+      w.write('r2-bucket', r'${{ env.R2_BUCKET }}');
+      w.write('source-dir', 'latest_content_hash/');
+      w.write(
+        'destination-dir',
+        'flutter_infra_release/flutter/',
+      );
     }
   }
 
@@ -356,8 +362,7 @@ class BuildConfigWriter {
       final step = steps.beginMap('name', 'Generate engine content hash');
       step.write('id', 'engine_content_hash');
       final run = step.beginMap('run', '|');
-      run.writeln(r'engine_content_hash=$(bin/internal/content_aware_hash.sh)');
-      run.writeln(r'echo "::notice:: Engine content hash: ${engine_content_hash}"');
+      run.writeln(r'engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}');
       run.writeln(r'echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT');
     }
     {
@@ -382,7 +387,7 @@ class BuildConfigWriter {
     if (language == 'dart') {
       // Use existing prebuilt engine version for the Dart SDK, as this is
       // executed before publishing new engine artifacts.
-      return 'FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart $script';
+      return 'FLUTTER_PREBUILT_ENGINE_VERSION=\${{ needs.guard.outputs.latest_content_hash }} ../../bin/dart $script';
     } else if (language == 'python3') {
       return 'python3 $script';
     } else if (language == 'bash' || language == '<undef>') {
@@ -471,6 +476,8 @@ void _writeGuardJob(YamlWriterSection jobsSection) {
   job.write('runs-on', 'ubuntu-latest');
   final outputs = job.beginMap('outputs');
   outputs.write('should_run', r'${{ steps.check.outputs.should_run }}');
+  outputs.write('engine_content_hash', r'${{ steps.engine_content_hash.outputs.value }}');
+  outputs.write('latest_content_hash', r'${{ steps.fetch_latest_content_hash.outputs.value }}');
   final steps = job.beginArray('steps');
   {
     final step = steps.beginMap('name', 'Checkout the repository');
@@ -487,9 +494,9 @@ void _writeGuardJob(YamlWriterSection jobsSection) {
     run.writeln(r'echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT');
   }
   {
-    final check = steps.beginMap('name', 'Check if engine.stamp exists');
-    check.write('id', 'check');
-    final run = check.beginMap('run', '|');
+    final step = steps.beginMap('name', 'Check if engine.stamp exists');
+    step.write('id', 'check');
+    final run = step.beginMap('run', '|');
     run.writeln(
       r'URL="https://engine.flutter0.dev/flutter_infra_release/flutter/${{ steps.engine_content_hash.outputs.value }}/engine_stamp.json"',
     );
@@ -500,6 +507,16 @@ void _writeGuardJob(YamlWriterSection jobsSection) {
     run.writeln(r'  echo "Engine stamp does not exist at $URL"');
     run.writeln(r'  echo "should_run=true" >> $GITHUB_OUTPUT');
     run.writeln(r'fi');
+  }
+  {
+    final step = steps.beginMap('name', 'Fetch latest content hash');
+    step.write('id', 'fetch_latest_content_hash');
+    final run = step.beginMap('run', '|');
+    run.writeln(r'LATEST_URL="https://engine.flutter0.dev/flutter_infra_release/flutter/latest_content_hash.txt"');
+    run.writeln(r'curl --fail -o latest_content_hash.txt $LATEST_URL');
+    run.writeln(r'LATEST_HASH=$(cat latest_content_hash.txt)');
+    run.writeln(r'echo "::notice:: Latest content hash: ${LATEST_HASH}"');
+    run.writeln(r'echo "value=${LATEST_HASH}" >> $GITHUB_OUTPUT');
   }
 }
 

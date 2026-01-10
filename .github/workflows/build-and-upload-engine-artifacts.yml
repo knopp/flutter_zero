@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
+      engine_content_hash: ${{ steps.engine_content_hash.outputs.value }}
+      latest_content_hash: ${{ steps.fetch_latest_content_hash.outputs.value }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -36,6 +38,14 @@ jobs:
             echo "Engine stamp does not exist at $URL"
             echo "should_run=true" >> $GITHUB_OUTPUT
           fi
+      - name: Fetch latest content hash
+        id: fetch_latest_content_hash
+        run: |
+          LATEST_URL="https://engine.flutter0.dev/flutter_infra_release/flutter/latest_content_hash.txt"
+          curl --fail -o latest_content_hash.txt $LATEST_URL
+          LATEST_HASH=$(cat latest_content_hash.txt)
+          echo "::notice:: Latest content hash: ${LATEST_HASH}"
+          echo "value=${LATEST_HASH}" >> $GITHUB_OUTPUT
   mac_host_debug_framework:
     runs-on: macos-latest
     defaults:
@@ -68,8 +78,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -122,8 +131,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -196,8 +204,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -250,8 +257,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -314,8 +320,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -368,8 +373,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -422,8 +426,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -496,8 +499,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -550,8 +552,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -604,8 +605,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -678,8 +678,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -732,8 +731,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -786,8 +784,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -850,8 +847,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -904,8 +900,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -958,8 +953,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1032,8 +1026,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1086,8 +1079,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1158,8 +1150,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1360,7 +1351,7 @@ jobs:
       - name: Run generator Verify-export-symbols
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=${{ needs.guard.outputs.latest_content_hash }} ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
       - name: Run generator Debug-gen_snapshots
@@ -1528,8 +1519,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1582,8 +1572,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1636,8 +1625,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1690,8 +1678,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1744,8 +1731,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1803,8 +1789,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -1896,7 +1881,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=${{ needs.guard.outputs.latest_content_hash }} ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
       - name: Tar engine/src/out/debug/artifacts.zip
@@ -1961,8 +1946,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2067,8 +2051,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2123,8 +2106,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2179,8 +2161,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2285,8 +2266,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2341,8 +2321,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2402,8 +2381,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2511,8 +2489,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2582,8 +2559,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2610,7 +2586,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=${{ needs.guard.outputs.latest_content_hash }} ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
       - name: Run generator api-documentation
@@ -2621,7 +2597,7 @@ jobs:
       - name: Run generator engine-stamp
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/tools/engine_tool/bin/et.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=${{ needs.guard.outputs.latest_content_hash }} ../../bin/dart flutter/tools/engine_tool/bin/et.dart \
             stamp
       - name: Tar engine/src/out/docs/ios-docs.zip
         run: |
@@ -2715,8 +2691,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2770,8 +2745,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2825,8 +2799,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2880,8 +2853,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -2935,8 +2907,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3030,8 +3001,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3085,8 +3055,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3141,8 +3110,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3197,8 +3165,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3253,8 +3220,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3309,8 +3275,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3365,8 +3330,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3421,8 +3385,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3476,8 +3439,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3531,8 +3493,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3586,8 +3547,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3641,8 +3601,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3696,8 +3655,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3751,8 +3709,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3845,8 +3802,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -3939,8 +3895,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4043,8 +3998,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4147,8 +4101,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4251,8 +4204,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4355,8 +4307,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4459,8 +4410,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4571,8 +4521,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4647,7 +4596,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=${{ needs.guard.outputs.latest_content_hash }} ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
   linux_android_debug:
@@ -4682,8 +4631,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4796,8 +4744,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4890,8 +4837,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -4984,8 +4930,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -5078,8 +5023,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -5177,8 +5121,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -5229,7 +5172,7 @@ jobs:
       - name: Run generator Verify-export-symbols-release-binaries
         run: |
           cd engine/src
-          FLUTTER_PREBUILT_ENGINE_VERSION=9a84f752d056218a334227d2710dba0b80141dc6 ../../bin/dart flutter/testing/symbols/verify_exported.dart \
+          FLUTTER_PREBUILT_ENGINE_VERSION=${{ needs.guard.outputs.latest_content_hash }} ../../bin/dart flutter/testing/symbols/verify_exported.dart \
             src/out/ci \
             src/flutter/buildtools
   linux_wasm_release:
@@ -5264,8 +5207,7 @@ jobs:
       - name: Generate engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Copy gclient file
         run: |
@@ -5345,20 +5287,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.guard.outputs.should_run == 'true' }}
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          path: ''
-      - name: Set up depot_tools
-        run: |
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $HOME/depot_tools
-          # Append depot_tools to the PATH for subsequent steps
-          echo "$HOME/depot_tools" >> $GITHUB_PATH
-      - name: Generate engine content hash
+      - name: Expose engine content hash
         id: engine_content_hash
         run: |
-          engine_content_hash=$(bin/internal/content_aware_hash.sh)
-          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
           echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
       - name: Download darwin-x64/artifacts.zip
         uses: actions/download-artifact@v4
@@ -7772,3 +7704,16 @@ jobs:
           r2-bucket: ${{ env.R2_BUCKET }}
           source-dir: artifact-133/
           destination-dir: flutter_infra_release/flutter/${{ steps.engine_content_hash.outputs.value }}/
+      - name: Create latest_content_hash.txt
+        run: |
+          mkdir -p latest_content_hash
+          echo "${{ needs.guard.outputs.engine_content_hash }}" > latest_content_hash/latest_content_hash.txt
+      - name: Publish latest_content_hash.txt
+        uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: ${{ env.R2_BUCKET }}
+          source-dir: latest_content_hash/
+          destination-dir: flutter_infra_release/flutter/

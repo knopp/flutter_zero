@@ -227,7 +227,12 @@ class Cache {
       tempStorage: getDownloadDir(),
       platform: _platform,
       httpClient: HttpClient(),
-      allowedBaseUrls: <String>[storageBaseUrl, realmlessStorageBaseUrl, cipdBaseUrl],
+      allowedBaseUrls: <String>[
+        storageBaseUrl,
+        realmlessStorageBaseUrl,
+        cipdBaseUrl,
+        originalStorageUrl,
+      ],
     );
   }
 
@@ -542,6 +547,8 @@ class Cache {
     _maybeWarnAboutStorageOverride(overrideUrl);
     return overrideUrl;
   }
+
+  String get originalStorageUrl => 'https://storage.googleapis.com';
 
   String get realmlessStorageBaseUrl {
     return storageRealm.isEmpty ? storageBaseUrl : storageBaseUrl.replaceAll('/$storageRealm', '');

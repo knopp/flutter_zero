@@ -11,7 +11,7 @@ This is done in an effort to explore new use-cases for Dart, such as writing app
 
 ### Can this be used right now?
 
-Not unless you want to build the engine yourself. The CI part that builds and deploys Flutter Zero engine binaries is still missing.
+Yes! It is very raw but there are engine builds available for all supported platforms.
 
 ### Why?
 

@@ -125,8 +125,6 @@
     "templates/app/windows.tmpl/CMakeLists.txt.tmpl",
     "templates/app/windows.tmpl/flutter/CMakeLists.txt",
     "templates/app/windows.tmpl/runner/CMakeLists.txt",
-    "templates/app/windows.tmpl/runner/flutter_window.cpp",
-    "templates/app/windows.tmpl/runner/flutter_window.h",
     "templates/app/windows.tmpl/runner/main.cpp.tmpl",
     "templates/app/windows.tmpl/runner/resource.h",
     "templates/app/windows.tmpl/runner/resources/app_icon.ico.img.tmpl",
@@ -134,8 +132,6 @@
     "templates/app/windows.tmpl/runner/Runner.rc.tmpl",
     "templates/app/windows.tmpl/runner/utils.cpp",
     "templates/app/windows.tmpl/runner/utils.h",
-    "templates/app/windows.tmpl/runner/win32_window.cpp",
-    "templates/app/windows.tmpl/runner/win32_window.h",
 
     "templates/app_test_widget/test/widget_test.dart.tmpl",
 

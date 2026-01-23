@@ -1,0 +1,1475 @@
+From 41ae39aadb4265bd8a62a91e19c4b42114ec1485 Mon Sep 17 00:00:00 2001
+From: Matej Knopp <matej.knopp@gmail.com>
+Date: Fri, 23 Jan 2026 20:45:03 +0100
+Subject: [PATCH] flutter_tools: Update app template. (#2)
+
+---
+ .../androidIdentifier/Application.kt.tmpl     |  47 +++
+ .../androidIdentifier/MainActivity.kt.tmpl    |   4 +-
+ .../app/src/main/AndroidManifest.xml.tmpl     |   2 +-
+ .../app/ios.tmpl/Runner/AppDelegate.swift     |  11 +-
+ .../templates/app/lib/main.dart.tmpl          | 273 -----------------
+ .../linux.tmpl/runner/my_application.cc.tmpl  |  66 +---
+ .../Runner.xcodeproj/project.pbxproj.tmpl     |   4 -
+ .../app/macos.tmpl/Runner/AppDelegate.swift   |   8 +
+ .../macos.tmpl/Runner/Base.lproj/MainMenu.xib |  16 +-
+ .../macos.tmpl/Runner/MainFlutterWindow.swift |  15 -
+ .../RunnerTests/RunnerTests.swift.tmpl        |  15 -
+ .../templates/app/pubspec.yaml.tmpl           | 112 -------
+ .../app/windows.tmpl/runner/CMakeLists.txt    |   2 -
+ .../windows.tmpl/runner/flutter_window.cpp    |  71 -----
+ .../app/windows.tmpl/runner/flutter_window.h  |  33 --
+ .../app/windows.tmpl/runner/main.cpp.tmpl     |  11 +-
+ .../app/windows.tmpl/runner/win32_window.cpp  | 288 ------------------
+ .../app/windows.tmpl/runner/win32_window.h    | 102 -------
+ .../test/widget_test.dart.tmpl                |  38 ---
+ .../module/common/test/widget_test.dart.tmpl  |  40 ---
+ .../templates/template_manifest.json          |   5 +-
+ 21 files changed, 83 insertions(+), 1080 deletions(-)
+ create mode 100644 packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl
+ delete mode 100644 packages/flutter_tools/templates/app/macos.tmpl/Runner/MainFlutterWindow.swift
+ delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.cpp
+ delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.h
+ delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.cpp
+ delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.h
+
+diff --git a/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl b/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl
+new file mode 100644
+index 00000000000..936bcb335eb
+--- /dev/null
++++ b/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl
+@@ -0,0 +1,47 @@
++package {{androidIdentifier}}
++
++import io.flutter.FlutterInjector
++import io.flutter.embedding.engine.FlutterEngine
++import io.flutter.embedding.engine.FlutterEngineCache
++import io.flutter.embedding.engine.dart.DartExecutor
++
++class Application : android.app.Application() {
++
++    companion object {
++        // Use a constant key so Activities/Services can fetch the engine later.
++        const val ENGINE_ID = "headless_engine"
++    }
++
++    private var engine: FlutterEngine? = null
++
++    override fun onCreate() {
++        super.onCreate()
++
++        // Ensure Flutter is initialized (loads engine resources, etc.)
++        // Usually automatic, but doing it explicitly makes startup behavior predictable.
++        FlutterInjector.instance().flutterLoader().startInitialization(this)
++        FlutterInjector.instance().flutterLoader().ensureInitializationComplete(this, null)
++
++        // Create a FlutterEngine not tied to any Activity.
++        val flutterEngine = FlutterEngine(this)
++
++        // Start executing Dart code. This runs the "main()" of your Flutter app by default.
++        val entrypoint = DartExecutor.DartEntrypoint.createDefault()
++        flutterEngine.dartExecutor.executeDartEntrypoint(entrypoint)
++
++        // Optionally: register MethodChannels / EventChannels here, once the engine exists.
++        // Example: setupChannels(flutterEngine)
++
++        // Cache it so other components can reuse it without recreating.
++        FlutterEngineCache.getInstance().put(ENGINE_ID, flutterEngine)
++
++        engine = flutterEngine
++    }
++
++    override fun onTerminate() {
++        // onTerminate is not reliable in production, but safe to keep for emulators/tests.
++        engine?.destroy()
++        engine = null
++        super.onTerminate()
++    }
++}
+diff --git a/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl b/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl
+index 7c51a726669..98dfa969fc3 100644
+--- a/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl
++++ b/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl
+@@ -1,5 +1,5 @@
+ package {{androidIdentifier}}
+ 
+-import io.flutter.embedding.android.FlutterActivity
++import android.app.Activity
+ 
+-class MainActivity : FlutterActivity()
++class MainActivity : Activity()
+diff --git a/packages/flutter_tools/templates/app/android.tmpl/app/src/main/AndroidManifest.xml.tmpl b/packages/flutter_tools/templates/app/android.tmpl/app/src/main/AndroidManifest.xml.tmpl
+index 37edff74fda..2f42ff3693b 100644
+--- a/packages/flutter_tools/templates/app/android.tmpl/app/src/main/AndroidManifest.xml.tmpl
++++ b/packages/flutter_tools/templates/app/android.tmpl/app/src/main/AndroidManifest.xml.tmpl
+@@ -1,7 +1,7 @@
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+     <application
+         android:label="{{projectName}}"
+-        android:name="${applicationName}"
++        android:name=".Application"
+         android:icon="@mipmap/ic_launcher">
+         <activity
+             android:name=".MainActivity"
+diff --git a/packages/flutter_tools/templates/app/ios.tmpl/Runner/AppDelegate.swift b/packages/flutter_tools/templates/app/ios.tmpl/Runner/AppDelegate.swift
+index c30b367ec0a..d53b76aa22c 100644
+--- a/packages/flutter_tools/templates/app/ios.tmpl/Runner/AppDelegate.swift
++++ b/packages/flutter_tools/templates/app/ios.tmpl/Runner/AppDelegate.swift
+@@ -2,15 +2,16 @@ import Flutter
+ import UIKit
+ 
+ @main
+-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
++@objc class AppDelegate: FlutterAppDelegate {
++  var engine: FlutterEngine?
++
+   override func application(
+     _ application: UIApplication,
+     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+   ) -> Bool {
++    engine = FlutterEngine(name: "project", project: nil)
++    GeneratedPluginRegistrant.register(with: engine!)
++    engine?.run(withEntrypoint:nil)
+     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+   }
+-
+-  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+-    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+-  }
+ }
+diff --git a/packages/flutter_tools/templates/app/lib/main.dart.tmpl b/packages/flutter_tools/templates/app/lib/main.dart.tmpl
+index 908eab5614a..34f46e2429c 100644
+--- a/packages/flutter_tools/templates/app/lib/main.dart.tmpl
++++ b/packages/flutter_tools/templates/app/lib/main.dart.tmpl
+@@ -1,275 +1,2 @@
+-import 'package:flutter/material.dart';
+-{{#withEmptyMain}}
+-
+ void main() {
+-  runApp(const MainApp());
+ }
+-
+-class MainApp extends StatelessWidget {
+-  const MainApp({super.key});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return const MaterialApp(
+-      home: Scaffold(
+-        body: Center(
+-          child: Text('Hello World!'),
+-        ),
+-      ),
+-    );
+-  }
+-}
+-{{/withEmptyMain}}
+-{{^withEmptyMain}}
+-{{#withPlatformChannelPluginHook}}
+-import 'dart:async';
+-
+-import 'package:flutter/services.dart';
+-import 'package:{{pluginProjectName}}/{{pluginProjectName}}.dart';
+-{{/withPlatformChannelPluginHook}}
+-{{#withFfi}}
+-import 'dart:async';
+-
+-import 'package:{{pluginProjectName}}/{{pluginProjectName}}.dart' as {{pluginProjectName}};
+-{{/withFfi}}
+-
+-void main() {
+-  runApp(const MyApp());
+-}
+-
+-{{^withPluginHook}}
+-class MyApp extends StatelessWidget {
+-  const MyApp({super.key});
+-
+-  // This widget is the root of your application.
+-  @override
+-  Widget build(BuildContext context) {
+-    return MaterialApp(
+-      title: 'Flutter Demo',
+-      theme: ThemeData(
+-        // This is the theme of your application.
+-        //
+-        // TRY THIS: Try running your application with "flutter run". You'll see
+-        // the application has a purple toolbar. Then, without quitting the app,
+-        // try changing the seedColor in the colorScheme below to Colors.green
+-        // and then invoke "hot reload" (save your changes or press the "hot
+-        // reload" button in a Flutter-supported IDE, or press "r" if you used
+-        // the command line to start the app).
+-        //
+-        // Notice that the counter didn't reset back to zero; the application
+-        // state is not lost during the reload. To reset the state, use hot
+-        // restart instead.
+-        //
+-        // This works for code too, not just values: Most code changes can be
+-        // tested with just a hot reload.
+-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+-      ),
+-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+-    );
+-  }
+-}
+-
+-class MyHomePage extends StatefulWidget {
+-  const MyHomePage({super.key, required this.title});
+-
+-  // This widget is the home page of your application. It is stateful, meaning
+-  // that it has a State object (defined below) that contains fields that affect
+-  // how it looks.
+-
+-  // This class is the configuration for the state. It holds the values (in this
+-  // case the title) provided by the parent (in this case the App widget) and
+-  // used by the build method of the State. Fields in a Widget subclass are
+-  // always marked "final".
+-
+-  final String title;
+-
+-  @override
+-  State<MyHomePage> createState() => _MyHomePageState();
+-}
+-
+-class _MyHomePageState extends State<MyHomePage> {
+-  int _counter = 0;
+-
+-  void _incrementCounter() {
+-    setState(() {
+-      // This call to setState tells the Flutter framework that something has
+-      // changed in this State, which causes it to rerun the build method below
+-      // so that the display can reflect the updated values. If we changed
+-      // _counter without calling setState(), then the build method would not be
+-      // called again, and so nothing would appear to happen.
+-      _counter++;
+-    });
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    // This method is rerun every time setState is called, for instance as done
+-    // by the _incrementCounter method above.
+-    //
+-    // The Flutter framework has been optimized to make rerunning build methods
+-    // fast, so that you can just rebuild anything that needs updating rather
+-    // than having to individually change instances of widgets.
+-    return Scaffold(
+-      appBar: AppBar(
+-        // TRY THIS: Try changing the color here to a specific color (to
+-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+-        // change color while the other colors stay the same.
+-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+-        // Here we take the value from the MyHomePage object that was created by
+-        // the App.build method, and use it to set our appbar title.
+-        title: Text(widget.title),
+-      ),
+-      body: Center(
+-        // Center is a layout widget. It takes a single child and positions it
+-        // in the middle of the parent.
+-        child: Column(
+-          // Column is also a layout widget. It takes a list of children and
+-          // arranges them vertically. By default, it sizes itself to fit its
+-          // children horizontally, and tries to be as tall as its parent.
+-          //
+-          // Column has various properties to control how it sizes itself and
+-          // how it positions its children. Here we use mainAxisAlignment to
+-          // center the children vertically; the main axis here is the vertical
+-          // axis because Columns are vertical (the cross axis would be
+-          // horizontal).
+-          //
+-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+-          // action in the IDE, or press "p" in the console), to see the
+-          // wireframe for each widget.
+-          mainAxisAlignment: .center,
+-          children: [
+-            const Text('You have pushed the button this many times:'),
+-            Text(
+-              '$_counter',
+-              style: Theme.of(context).textTheme.headlineMedium,
+-            ),
+-          ],
+-        ),
+-      ),
+-      floatingActionButton: FloatingActionButton(
+-        onPressed: _incrementCounter,
+-        tooltip: 'Increment',
+-        child: const Icon(Icons.add),
+-      ),
+-    );
+-  }
+-}
+-{{/withPluginHook}}
+-{{#withPlatformChannelPluginHook}}
+-class MyApp extends StatefulWidget {
+-  const MyApp({super.key});
+-
+-  @override
+-  State<MyApp> createState() => _MyAppState();
+-}
+-
+-class _MyAppState extends State<MyApp> {
+-  String _platformVersion = 'Unknown';
+-  final _{{pluginClassLowerCamelCase}} = {{pluginDartClass}}();
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    initPlatformState();
+-  }
+-
+-  // Platform messages are asynchronous, so we initialize in an async method.
+-  Future<void> initPlatformState() async {
+-    String platformVersion;
+-    // Platform messages may fail, so we use a try/catch PlatformException.
+-    // We also handle the message potentially returning null.
+-    try {
+-      platformVersion =
+-          await _{{pluginClassLowerCamelCase}}.getPlatformVersion() ?? 'Unknown platform version';
+-    } on PlatformException {
+-      platformVersion = 'Failed to get platform version.';
+-    }
+-
+-    // If the widget was removed from the tree while the asynchronous platform
+-    // message was in flight, we want to discard the reply rather than calling
+-    // setState to update our non-existent appearance.
+-    if (!mounted) return;
+-
+-    setState(() {
+-      _platformVersion = platformVersion;
+-    });
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return MaterialApp(
+-      home: Scaffold(
+-        appBar: AppBar(title: const Text('Plugin example app')),
+-        body: Center(child: Text('Running on: $_platformVersion\n')),
+-      ),
+-    );
+-  }
+-}
+-{{/withPlatformChannelPluginHook}}
+-{{#withFfi}}
+-class MyApp extends StatefulWidget {
+-  const MyApp({super.key});
+-
+-  @override
+-  State<MyApp> createState() => _MyAppState();
+-}
+-
+-class _MyAppState extends State<MyApp> {
+-  late int sumResult;
+-  late Future<int> sumAsyncResult;
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    sumResult = {{pluginProjectName}}.sum(1, 2);
+-    sumAsyncResult = {{pluginProjectName}}.sumAsync(3, 4);
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    const textStyle = TextStyle(fontSize: 25);
+-    const spacerSmall = SizedBox(height: 10);
+-    return MaterialApp(
+-      home: Scaffold(
+-        appBar: AppBar(title: const Text('Native Packages')),
+-        body: SingleChildScrollView(
+-          child: Container(
+-            padding: const .all(10),
+-            child: Column(
+-              children: [
+-                const Text(
+-                  'This calls a native function through FFI that is shipped as source in the package. '
+-                  'The native code is built as part of the Flutter Runner build.',
+-                  style: textStyle,
+-                  textAlign: .center,
+-                ),
+-                spacerSmall,
+-                Text(
+-                  'sum(1, 2) = $sumResult',
+-                  style: textStyle,
+-                  textAlign: .center,
+-                ),
+-                spacerSmall,
+-                FutureBuilder<int>(
+-                  future: sumAsyncResult,
+-                  builder: (BuildContext context, AsyncSnapshot<int> value) {
+-                    final displayValue = (value.hasData)
+-                        ? value.data
+-                        : 'loading';
+-                    return Text(
+-                      'await sumAsync(3, 4) = $displayValue',
+-                      style: textStyle,
+-                      textAlign: .center,
+-                    );
+-                  },
+-                ),
+-              ],
+-            ),
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+-}
+-{{/withFfi}}
+-{{/withEmptyMain}}
+diff --git a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
+index 3b8611caea9..6ff97760cce 100644
+--- a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
++++ b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
+@@ -10,72 +10,30 @@
+ struct _MyApplication {
+   GtkApplication parent_instance;
+   char** dart_entrypoint_arguments;
++  FlEngine *engine;
+ };
+ 
+ G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+ 
+-// Called when first Flutter frame received.
+-static void first_frame_cb(MyApplication* self, FlView* view) {
+-  gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+-}
+-
+ // Implements GApplication::activate.
+-static void my_application_activate(GApplication* application) {
+-  MyApplication* self = MY_APPLICATION(application);
+-  GtkWindow* window =
+-      GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
+-
+-  // Use a header bar when running in GNOME as this is the common style used
+-  // by applications and is the setup most users will be using (e.g. Ubuntu
+-  // desktop).
+-  // If running on X and not using GNOME then just use a traditional title bar
+-  // in case the window manager does more exotic layout, e.g. tiling.
+-  // If running on Wayland assume the header bar will work (may need changing
+-  // if future cases occur).
+-  gboolean use_header_bar = TRUE;
+-#ifdef GDK_WINDOWING_X11
+-  GdkScreen* screen = gtk_window_get_screen(window);
+-  if (GDK_IS_X11_SCREEN(screen)) {
+-    const gchar* wm_name = gdk_x11_screen_get_window_manager_name(screen);
+-    if (g_strcmp0(wm_name, "GNOME Shell") != 0) {
+-      use_header_bar = FALSE;
+-    }
+-  }
+-#endif
+-  if (use_header_bar) {
+-    GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
+-    gtk_widget_show(GTK_WIDGET(header_bar));
+-    gtk_header_bar_set_title(header_bar, "{{projectName}}");
+-    gtk_header_bar_set_show_close_button(header_bar, TRUE);
+-    gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
+-  } else {
+-    gtk_window_set_title(window, "{{projectName}}");
+-  }
++static void my_application_activate(GApplication *application) {
++
++  g_application_hold(application);
+ 
+-  gtk_window_set_default_size(window, 1280, 720);
++  MyApplication *self = MY_APPLICATION(application);
+ 
+   g_autoptr(FlDartProject) project = fl_dart_project_new();
+   fl_dart_project_set_dart_entrypoint_arguments(
+       project, self->dart_entrypoint_arguments);
+ 
+-  FlView* view = fl_view_new(project);
+-  GdkRGBA background_color;
+-  // Background defaults to black, override it here if necessary, e.g. #00000000
+-  // for transparent.
+-  gdk_rgba_parse(&background_color, "#000000");
+-  fl_view_set_background_color(view, &background_color);
+-  gtk_widget_show(GTK_WIDGET(view));
+-  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
+-
+-  // Show the window when Flutter renders.
+-  // Requires the view to be realized so we can start rendering.
+-  g_signal_connect_swapped(view, "first-frame", G_CALLBACK(first_frame_cb),
+-                           self);
+-  gtk_widget_realize(GTK_WIDGET(view));
+-
+-  fl_register_plugins(FL_PLUGIN_REGISTRY(view));
++  self->engine = fl_engine_new(project);
++  g_autoptr(GError) error = nullptr;
++  if (!fl_engine_start(self->engine, &error)) {
++    g_warning("Failed to start Flutter engine: %s", error->message);
++    return;
++  }
+ 
+-  gtk_widget_grab_focus(GTK_WIDGET(view));
++  fl_register_plugins(FL_PLUGIN_REGISTRY(self->engine));
+ }
+ 
+ // Implements GApplication::local_command_line.
+diff --git a/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl b/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl
+index ddedff58320..28a05200ec3 100644
+--- a/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl
++++ b/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl
+@@ -26,7 +26,6 @@
+ 		33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC10F02044A3C60003C045 /* AppDelegate.swift */; };
+ 		33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
+ 		33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F42044A3C60003C045 /* MainMenu.xib */; };
+-		33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC11122044BFA00003C045 /* MainFlutterWindow.swift */; };
+ 		{{#withSwiftPackageManager}}
+ 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
+ 		{{/withSwiftPackageManager}}
+@@ -72,7 +71,6 @@
+ 		33CC10F22044A3C60003C045 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Runner/Assets.xcassets; sourceTree = "<group>"; };
+ 		33CC10F52044A3C60003C045 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+ 		33CC10F72044A3C60003C045 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Runner/Info.plist; sourceTree = "<group>"; };
+-		33CC11122044BFA00003C045 /* MainFlutterWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainFlutterWindow.swift; sourceTree = "<group>"; };
+ 		33CEB47222A05771004F2AC0 /* Flutter-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Flutter-Debug.xcconfig"; sourceTree = "<group>"; };
+ 		33CEB47422A05771004F2AC0 /* Flutter-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Flutter-Release.xcconfig"; sourceTree = "<group>"; };
+ 		33CEB47722A0578A004F2AC0 /* Flutter-Generated.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Flutter-Generated.xcconfig"; path = "ephemeral/Flutter-Generated.xcconfig"; sourceTree = "<group>"; };
+@@ -183,7 +181,6 @@
+ 			isa = PBXGroup;
+ 			children = (
+ 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
+-				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
+ 				33E51913231747F40026EE4D /* DebugProfile.entitlements */,
+ 				33E51914231749380026EE4D /* Release.entitlements */,
+ 				33CC11242044D66E0003C045 /* Resources */,
+@@ -374,7 +371,6 @@
+ 			isa = PBXSourcesBuildPhase;
+ 			buildActionMask = 2147483647;
+ 			files = (
+-				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
+ 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
+ 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
+ 			);
+diff --git a/packages/flutter_tools/templates/app/macos.tmpl/Runner/AppDelegate.swift b/packages/flutter_tools/templates/app/macos.tmpl/Runner/AppDelegate.swift
+index b3c17614122..7ef3fae6f72 100644
+--- a/packages/flutter_tools/templates/app/macos.tmpl/Runner/AppDelegate.swift
++++ b/packages/flutter_tools/templates/app/macos.tmpl/Runner/AppDelegate.swift
+@@ -7,6 +7,14 @@ class AppDelegate: FlutterAppDelegate {
+     return true
+   }
+ 
++  var engine: FlutterEngine?
++
++  override func applicationDidFinishLaunching(_ notification: Notification) {
++    engine = FlutterEngine(name: "project", project: nil)
++    RegisterGeneratedPlugins(registry: engine!)
++    engine?.run(withEntrypoint:nil)
++  }
++
+   override func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
+     return true
+   }
+diff --git a/packages/flutter_tools/templates/app/macos.tmpl/Runner/Base.lproj/MainMenu.xib b/packages/flutter_tools/templates/app/macos.tmpl/Runner/Base.lproj/MainMenu.xib
+index 80e867a4e06..1c3a4f69202 100644
+--- a/packages/flutter_tools/templates/app/macos.tmpl/Runner/Base.lproj/MainMenu.xib
++++ b/packages/flutter_tools/templates/app/macos.tmpl/Runner/Base.lproj/MainMenu.xib
+@@ -1,9 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
++<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23504" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+     <dependencies>
+-        <deployment identifier="macosx"/>
+-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
++        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23504"/>
+     </dependencies>
+     <objects>
+         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
+@@ -16,7 +14,6 @@
+         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Runner" customModuleProvider="target">
+             <connections>
+                 <outlet property="applicationMenu" destination="uQy-DD-JDr" id="XBo-yE-nKs"/>
+-                <outlet property="mainFlutterWindow" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
+             </connections>
+         </customObject>
+         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
+@@ -330,14 +327,5 @@
+             </items>
+             <point key="canvasLocation" x="142" y="-258"/>
+         </menu>
+-        <window title="APP_NAME" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g" customClass="MainFlutterWindow" customModule="Runner" customModuleProvider="target">
+-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+-            <rect key="contentRect" x="335" y="390" width="800" height="600"/>
+-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1577"/>
+-            <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
+-                <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
+-                <autoresizingMask key="autoresizingMask"/>
+-            </view>
+-        </window>
+     </objects>
+ </document>
+diff --git a/packages/flutter_tools/templates/app/macos.tmpl/Runner/MainFlutterWindow.swift b/packages/flutter_tools/templates/app/macos.tmpl/Runner/MainFlutterWindow.swift
+deleted file mode 100644
+index 3cc05eb2349..00000000000
+--- a/packages/flutter_tools/templates/app/macos.tmpl/Runner/MainFlutterWindow.swift
++++ /dev/null
+@@ -1,15 +0,0 @@
+-import Cocoa
+-import FlutterMacOS
+-
+-class MainFlutterWindow: NSWindow {
+-  override func awakeFromNib() {
+-    let flutterViewController = FlutterViewController()
+-    let windowFrame = self.frame
+-    self.contentViewController = flutterViewController
+-    self.setFrame(windowFrame, display: true)
+-
+-    RegisterGeneratedPlugins(registry: flutterViewController)
+-
+-    super.awakeFromNib()
+-  }
+-}
+diff --git a/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl b/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl
+index 04a7a3d2298..adab2886ba0 100644
+--- a/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl
++++ b/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl
+@@ -17,21 +17,6 @@ import XCTest
+ 
+ class RunnerTests: XCTestCase {
+ 
+-{{#withPlatformChannelPluginHook}}
+-  func testGetPlatformVersion() {
+-    let plugin = {{pluginClass}}()
+-
+-    let call = FlutterMethodCall(methodName: "getPlatformVersion", arguments: [])
+-
+-    let resultExpectation = expectation(description: "result block must be called.")
+-    plugin.handle(call) { result in
+-      XCTAssertEqual(result as! String,
+-                     "macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
+-      resultExpectation.fulfill()
+-    }
+-    waitForExpectations(timeout: 1)
+-  }
+-{{/withPlatformChannelPluginHook}}
+ {{^withPlatformChannelPluginHook}}
+   func testExample() {
+     // If you add code to the Runner application, consider adding tests here.
+diff --git a/packages/flutter_tools/templates/app/pubspec.yaml.tmpl b/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
+index 10509c18290..63cc5249192 100644
+--- a/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
++++ b/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
+@@ -1,6 +1,5 @@
+ name: {{projectName}}
+ description: {{description}}
+-{{#withEmptyMain}}
+ publish_to: 'none'
+ version: 0.1.0+1
+ 
+@@ -12,115 +11,4 @@ dependencies:
+     sdk: flutter
+ 
+ dev_dependencies:
+-  flutter_test:
+-    sdk: flutter
+   flutter_lints: ^6.0.0
+-
+-flutter:
+-  uses-material-design: true
+-{{/withEmptyMain}}
+-{{^withEmptyMain}}
+-# The following line prevents the package from being accidentally published to
+-# pub.dev using `flutter pub publish`. This is preferred for private packages.
+-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+-{{^withPlatformChannelPluginHook}}
+-
+-# The following defines the version and build number for your application.
+-# A version number is three numbers separated by dots, like 1.2.43
+-# followed by an optional build number separated by a +.
+-# Both the version and the builder number may be overridden in flutter
+-# build by specifying --build-name and --build-number, respectively.
+-# In Android, build-name is used as versionName while build-number used as versionCode.
+-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+-# Read more about iOS versioning at
+-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+-# In Windows, build-name is used as the major, minor, and patch parts
+-# of the product and file versions while build-number is used as the build suffix.
+-version: 1.0.0+1
+-{{/withPlatformChannelPluginHook}}
+-
+-environment:
+-  sdk: {{dartSdkVersionBounds}}
+-
+-# Dependencies specify other packages that your package needs in order to work.
+-# To automatically upgrade your package dependencies to the latest versions
+-# consider running `flutter pub upgrade --major-versions`. Alternatively,
+-# dependencies can be manually updated by changing the version numbers below to
+-# the latest version available on pub.dev. To see which dependencies have newer
+-# versions available, run `flutter pub outdated`.
+-dependencies:
+-  flutter:
+-    sdk: flutter
+-{{#withPluginHook}}
+-
+-  {{pluginProjectName}}:
+-    # When depending on this package from a real application you should use:
+-    #   {{pluginProjectName}}: ^x.y.z
+-    # See https://dart.dev/tools/pub/dependencies#version-constraints
+-    # The example app is bundled with the plugin so we use a path dependency on
+-    # the parent directory to use the current plugin's version.
+-    path: ../
+-{{/withPluginHook}}
+-
+-  # The following adds the Cupertino Icons font to your application.
+-  # Use with the CupertinoIcons class for iOS style icons.
+-  cupertino_icons: ^1.0.8
+-
+-dev_dependencies:
+-{{#withPlatformChannelPluginHook}}
+-  integration_test:
+-    sdk: flutter
+-{{/withPlatformChannelPluginHook}}
+-  flutter_test:
+-    sdk: flutter
+-
+-  # The "flutter_lints" package below contains a set of recommended lints to
+-  # encourage good coding practices. The lint set provided by the package is
+-  # activated in the `analysis_options.yaml` file located at the root of your
+-  # package. See that file for information about deactivating specific lint
+-  # rules and activating additional ones.
+-  flutter_lints: ^6.0.0
+-
+-# For information on the generic Dart part of this file, see the
+-# following page: https://dart.dev/tools/pub/pubspec
+-
+-# The following section is specific to Flutter packages.
+-flutter:
+-
+-  # The following line ensures that the Material Icons font is
+-  # included with your application, so that you can use the icons in
+-  # the material Icons class.
+-  uses-material-design: true
+-
+-  # To add assets to your application, add an assets section, like this:
+-  # assets:
+-  #   - images/a_dot_burr.jpeg
+-  #   - images/a_dot_ham.jpeg
+-
+-  # An image asset can refer to one or more resolution-specific "variants", see
+-  # https://flutter.dev/to/resolution-aware-images
+-
+-  # For details regarding adding assets from package dependencies, see
+-  # https://flutter.dev/to/asset-from-package
+-
+-  # To add custom fonts to your application, add a fonts section here,
+-  # in this "flutter" section. Each entry in this list should have a
+-  # "family" key with the font family name, and a "fonts" key with a
+-  # list giving the asset and other descriptors for the font. For
+-  # example:
+-  # fonts:
+-  #   - family: Schyler
+-  #     fonts:
+-  #       - asset: fonts/Schyler-Regular.ttf
+-  #       - asset: fonts/Schyler-Italic.ttf
+-  #         style: italic
+-  #   - family: Trajan Pro
+-  #     fonts:
+-  #       - asset: fonts/TrajanPro.ttf
+-  #       - asset: fonts/TrajanPro_Bold.ttf
+-  #         weight: 700
+-  #
+-  # For details regarding fonts from package dependencies,
+-  # see https://flutter.dev/to/font-from-package
+-{{/withEmptyMain}}
+diff --git a/packages/flutter_tools/templates/app/windows.tmpl/runner/CMakeLists.txt b/packages/flutter_tools/templates/app/windows.tmpl/runner/CMakeLists.txt
+index 394917c053a..ae89fc0a648 100644
+--- a/packages/flutter_tools/templates/app/windows.tmpl/runner/CMakeLists.txt
++++ b/packages/flutter_tools/templates/app/windows.tmpl/runner/CMakeLists.txt
+@@ -7,10 +7,8 @@ project(runner LANGUAGES CXX)
+ #
+ # Any new source files that you add to the application should be added here.
+ add_executable(${BINARY_NAME} WIN32
+-  "flutter_window.cpp"
+   "main.cpp"
+   "utils.cpp"
+-  "win32_window.cpp"
+   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
+   "Runner.rc"
+   "runner.exe.manifest"
+diff --git a/packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.cpp b/packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.cpp
+deleted file mode 100644
+index 955ee3038f9..00000000000
+--- a/packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.cpp
++++ /dev/null
+@@ -1,71 +0,0 @@
+-#include "flutter_window.h"
+-
+-#include <optional>
+-
+-#include "flutter/generated_plugin_registrant.h"
+-
+-FlutterWindow::FlutterWindow(const flutter::DartProject& project)
+-    : project_(project) {}
+-
+-FlutterWindow::~FlutterWindow() {}
+-
+-bool FlutterWindow::OnCreate() {
+-  if (!Win32Window::OnCreate()) {
+-    return false;
+-  }
+-
+-  RECT frame = GetClientArea();
+-
+-  // The size here must match the window dimensions to avoid unnecessary surface
+-  // creation / destruction in the startup path.
+-  flutter_controller_ = std::make_unique<flutter::FlutterViewController>(
+-      frame.right - frame.left, frame.bottom - frame.top, project_);
+-  // Ensure that basic setup of the controller was successful.
+-  if (!flutter_controller_->engine() || !flutter_controller_->view()) {
+-    return false;
+-  }
+-  RegisterPlugins(flutter_controller_->engine());
+-  SetChildContent(flutter_controller_->view()->GetNativeWindow());
+-
+-  flutter_controller_->engine()->SetNextFrameCallback([&]() {
+-    this->Show();
+-  });
+-
+-  // Flutter can complete the first frame before the "show window" callback is
+-  // registered. The following call ensures a frame is pending to ensure the
+-  // window is shown. It is a no-op if the first frame hasn't completed yet.
+-  flutter_controller_->ForceRedraw();
+-
+-  return true;
+-}
+-
+-void FlutterWindow::OnDestroy() {
+-  if (flutter_controller_) {
+-    flutter_controller_ = nullptr;
+-  }
+-
+-  Win32Window::OnDestroy();
+-}
+-
+-LRESULT
+-FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
+-                              WPARAM const wparam,
+-                              LPARAM const lparam) noexcept {
+-  // Give Flutter, including plugins, an opportunity to handle window messages.
+-  if (flutter_controller_) {
+-    std::optional<LRESULT> result =
+-        flutter_controller_->HandleTopLevelWindowProc(hwnd, message, wparam,
+-                                                      lparam);
+-    if (result) {
+-      return *result;
+-    }
+-  }
+-
+-  switch (message) {
+-    case WM_FONTCHANGE:
+-      flutter_controller_->engine()->ReloadSystemFonts();
+-      break;
+-  }
+-
+-  return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
+-}
+diff --git a/packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.h b/packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.h
+deleted file mode 100644
+index 6da0652f05f..00000000000
+--- a/packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.h
++++ /dev/null
+@@ -1,33 +0,0 @@
+-#ifndef RUNNER_FLUTTER_WINDOW_H_
+-#define RUNNER_FLUTTER_WINDOW_H_
+-
+-#include <flutter/dart_project.h>
+-#include <flutter/flutter_view_controller.h>
+-
+-#include <memory>
+-
+-#include "win32_window.h"
+-
+-// A window that does nothing but host a Flutter view.
+-class FlutterWindow : public Win32Window {
+- public:
+-  // Creates a new FlutterWindow hosting a Flutter view running |project|.
+-  explicit FlutterWindow(const flutter::DartProject& project);
+-  virtual ~FlutterWindow();
+-
+- protected:
+-  // Win32Window:
+-  bool OnCreate() override;
+-  void OnDestroy() override;
+-  LRESULT MessageHandler(HWND window, UINT const message, WPARAM const wparam,
+-                         LPARAM const lparam) noexcept override;
+-
+- private:
+-  // The project to run.
+-  flutter::DartProject project_;
+-
+-  // The Flutter instance hosted by this window.
+-  std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
+-};
+-
+-#endif  // RUNNER_FLUTTER_WINDOW_H_
+diff --git a/packages/flutter_tools/templates/app/windows.tmpl/runner/main.cpp.tmpl b/packages/flutter_tools/templates/app/windows.tmpl/runner/main.cpp.tmpl
+index 70a53ab994d..3d5eb7c7c4c 100644
+--- a/packages/flutter_tools/templates/app/windows.tmpl/runner/main.cpp.tmpl
++++ b/packages/flutter_tools/templates/app/windows.tmpl/runner/main.cpp.tmpl
+@@ -1,8 +1,7 @@
+ #include <flutter/dart_project.h>
+-#include <flutter/flutter_view_controller.h>
++#include <flutter/flutter_engine.h>
+ #include <windows.h>
+ 
+-#include "flutter_window.h"
+ #include "utils.h"
+ 
+ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
+@@ -24,13 +23,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
+ 
+   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
+ 
+-  FlutterWindow window(project);
+-  Win32Window::Point origin(10, 10);
+-  Win32Window::Size size(1280, 720);
+-  if (!window.Create(L"{{projectName}}", origin, size)) {
++  // Create headless flutter engine
++  flutter::FlutterEngine engine(project);
++  if (!engine.Run()) {
+     return EXIT_FAILURE;
+   }
+-  window.SetQuitOnClose(true);
+ 
+   ::MSG msg;
+   while (::GetMessage(&msg, nullptr, 0, 0)) {
+diff --git a/packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.cpp b/packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.cpp
+deleted file mode 100644
+index 60608d0fe5b..00000000000
+--- a/packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.cpp
++++ /dev/null
+@@ -1,288 +0,0 @@
+-#include "win32_window.h"
+-
+-#include <dwmapi.h>
+-#include <flutter_windows.h>
+-
+-#include "resource.h"
+-
+-namespace {
+-
+-/// Window attribute that enables dark mode window decorations.
+-///
+-/// Redefined in case the developer's machine has a Windows SDK older than
+-/// version 10.0.22000.0.
+-/// See: https://docs.microsoft.com/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+-#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+-#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+-#endif
+-
+-constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
+-
+-/// Registry key for app theme preference.
+-///
+-/// A value of 0 indicates apps should use dark mode. A non-zero or missing
+-/// value indicates apps should use light mode.
+-constexpr const wchar_t kGetPreferredBrightnessRegKey[] =
+-  L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+-constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme";
+-
+-// The number of Win32Window objects that currently exist.
+-static int g_active_window_count = 0;
+-
+-using EnableNonClientDpiScaling = BOOL __stdcall(HWND hwnd);
+-
+-// Scale helper to convert logical scaler values to physical using passed in
+-// scale factor
+-int Scale(int source, double scale_factor) {
+-  return static_cast<int>(source * scale_factor);
+-}
+-
+-// Dynamically loads the |EnableNonClientDpiScaling| from the User32 module.
+-// This API is only needed for PerMonitor V1 awareness mode.
+-void EnableFullDpiSupportIfAvailable(HWND hwnd) {
+-  HMODULE user32_module = LoadLibraryA("User32.dll");
+-  if (!user32_module) {
+-    return;
+-  }
+-  auto enable_non_client_dpi_scaling =
+-      reinterpret_cast<EnableNonClientDpiScaling*>(
+-          GetProcAddress(user32_module, "EnableNonClientDpiScaling"));
+-  if (enable_non_client_dpi_scaling != nullptr) {
+-    enable_non_client_dpi_scaling(hwnd);
+-  }
+-  FreeLibrary(user32_module);
+-}
+-
+-}  // namespace
+-
+-// Manages the Win32Window's window class registration.
+-class WindowClassRegistrar {
+- public:
+-  ~WindowClassRegistrar() = default;
+-
+-  // Returns the singleton registrar instance.
+-  static WindowClassRegistrar* GetInstance() {
+-    if (!instance_) {
+-      instance_ = new WindowClassRegistrar();
+-    }
+-    return instance_;
+-  }
+-
+-  // Returns the name of the window class, registering the class if it hasn't
+-  // previously been registered.
+-  const wchar_t* GetWindowClass();
+-
+-  // Unregisters the window class. Should only be called if there are no
+-  // instances of the window.
+-  void UnregisterWindowClass();
+-
+- private:
+-  WindowClassRegistrar() = default;
+-
+-  static WindowClassRegistrar* instance_;
+-
+-  bool class_registered_ = false;
+-};
+-
+-WindowClassRegistrar* WindowClassRegistrar::instance_ = nullptr;
+-
+-const wchar_t* WindowClassRegistrar::GetWindowClass() {
+-  if (!class_registered_) {
+-    WNDCLASS window_class{};
+-    window_class.hCursor = LoadCursor(nullptr, IDC_ARROW);
+-    window_class.lpszClassName = kWindowClassName;
+-    window_class.style = CS_HREDRAW | CS_VREDRAW;
+-    window_class.cbClsExtra = 0;
+-    window_class.cbWndExtra = 0;
+-    window_class.hInstance = GetModuleHandle(nullptr);
+-    window_class.hIcon =
+-        LoadIcon(window_class.hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
+-    window_class.hbrBackground = 0;
+-    window_class.lpszMenuName = nullptr;
+-    window_class.lpfnWndProc = Win32Window::WndProc;
+-    RegisterClass(&window_class);
+-    class_registered_ = true;
+-  }
+-  return kWindowClassName;
+-}
+-
+-void WindowClassRegistrar::UnregisterWindowClass() {
+-  UnregisterClass(kWindowClassName, nullptr);
+-  class_registered_ = false;
+-}
+-
+-Win32Window::Win32Window() {
+-  ++g_active_window_count;
+-}
+-
+-Win32Window::~Win32Window() {
+-  --g_active_window_count;
+-  Destroy();
+-}
+-
+-bool Win32Window::Create(const std::wstring& title,
+-                         const Point& origin,
+-                         const Size& size) {
+-  Destroy();
+-
+-  const wchar_t* window_class =
+-      WindowClassRegistrar::GetInstance()->GetWindowClass();
+-
+-  const POINT target_point = {static_cast<LONG>(origin.x),
+-                              static_cast<LONG>(origin.y)};
+-  HMONITOR monitor = MonitorFromPoint(target_point, MONITOR_DEFAULTTONEAREST);
+-  UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
+-  double scale_factor = dpi / 96.0;
+-
+-  HWND window = CreateWindow(
+-      window_class, title.c_str(), WS_OVERLAPPEDWINDOW,
+-      Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
+-      Scale(size.width, scale_factor), Scale(size.height, scale_factor),
+-      nullptr, nullptr, GetModuleHandle(nullptr), this);
+-
+-  if (!window) {
+-    return false;
+-  }
+-
+-  UpdateTheme(window);
+-
+-  return OnCreate();
+-}
+-
+-bool Win32Window::Show() {
+-  return ShowWindow(window_handle_, SW_SHOWNORMAL);
+-}
+-
+-// static
+-LRESULT CALLBACK Win32Window::WndProc(HWND const window,
+-                                      UINT const message,
+-                                      WPARAM const wparam,
+-                                      LPARAM const lparam) noexcept {
+-  if (message == WM_NCCREATE) {
+-    auto window_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
+-    SetWindowLongPtr(window, GWLP_USERDATA,
+-                     reinterpret_cast<LONG_PTR>(window_struct->lpCreateParams));
+-
+-    auto that = static_cast<Win32Window*>(window_struct->lpCreateParams);
+-    EnableFullDpiSupportIfAvailable(window);
+-    that->window_handle_ = window;
+-  } else if (Win32Window* that = GetThisFromHandle(window)) {
+-    return that->MessageHandler(window, message, wparam, lparam);
+-  }
+-
+-  return DefWindowProc(window, message, wparam, lparam);
+-}
+-
+-LRESULT
+-Win32Window::MessageHandler(HWND hwnd,
+-                            UINT const message,
+-                            WPARAM const wparam,
+-                            LPARAM const lparam) noexcept {
+-  switch (message) {
+-    case WM_DESTROY:
+-      window_handle_ = nullptr;
+-      Destroy();
+-      if (quit_on_close_) {
+-        PostQuitMessage(0);
+-      }
+-      return 0;
+-
+-    case WM_DPICHANGED: {
+-      auto newRectSize = reinterpret_cast<RECT*>(lparam);
+-      LONG newWidth = newRectSize->right - newRectSize->left;
+-      LONG newHeight = newRectSize->bottom - newRectSize->top;
+-
+-      SetWindowPos(hwnd, nullptr, newRectSize->left, newRectSize->top, newWidth,
+-                   newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+-
+-      return 0;
+-    }
+-    case WM_SIZE: {
+-      RECT rect = GetClientArea();
+-      if (child_content_ != nullptr) {
+-        // Size and position the child window.
+-        MoveWindow(child_content_, rect.left, rect.top, rect.right - rect.left,
+-                   rect.bottom - rect.top, TRUE);
+-      }
+-      return 0;
+-    }
+-
+-    case WM_ACTIVATE:
+-      if (child_content_ != nullptr) {
+-        SetFocus(child_content_);
+-      }
+-      return 0;
+-
+-    case WM_DWMCOLORIZATIONCOLORCHANGED:
+-      UpdateTheme(hwnd);
+-      return 0;
+-  }
+-
+-  return DefWindowProc(window_handle_, message, wparam, lparam);
+-}
+-
+-void Win32Window::Destroy() {
+-  OnDestroy();
+-
+-  if (window_handle_) {
+-    DestroyWindow(window_handle_);
+-    window_handle_ = nullptr;
+-  }
+-  if (g_active_window_count == 0) {
+-    WindowClassRegistrar::GetInstance()->UnregisterWindowClass();
+-  }
+-}
+-
+-Win32Window* Win32Window::GetThisFromHandle(HWND const window) noexcept {
+-  return reinterpret_cast<Win32Window*>(
+-      GetWindowLongPtr(window, GWLP_USERDATA));
+-}
+-
+-void Win32Window::SetChildContent(HWND content) {
+-  child_content_ = content;
+-  SetParent(content, window_handle_);
+-  RECT frame = GetClientArea();
+-
+-  MoveWindow(content, frame.left, frame.top, frame.right - frame.left,
+-             frame.bottom - frame.top, true);
+-
+-  SetFocus(child_content_);
+-}
+-
+-RECT Win32Window::GetClientArea() {
+-  RECT frame;
+-  GetClientRect(window_handle_, &frame);
+-  return frame;
+-}
+-
+-HWND Win32Window::GetHandle() {
+-  return window_handle_;
+-}
+-
+-void Win32Window::SetQuitOnClose(bool quit_on_close) {
+-  quit_on_close_ = quit_on_close;
+-}
+-
+-bool Win32Window::OnCreate() {
+-  // No-op; provided for subclasses.
+-  return true;
+-}
+-
+-void Win32Window::OnDestroy() {
+-  // No-op; provided for subclasses.
+-}
+-
+-void Win32Window::UpdateTheme(HWND const window) {
+-  DWORD light_mode;
+-  DWORD light_mode_size = sizeof(light_mode);
+-  LSTATUS result = RegGetValue(HKEY_CURRENT_USER, kGetPreferredBrightnessRegKey,
+-                               kGetPreferredBrightnessRegValue,
+-                               RRF_RT_REG_DWORD, nullptr, &light_mode,
+-                               &light_mode_size);
+-
+-  if (result == ERROR_SUCCESS) {
+-    BOOL enable_dark_mode = light_mode == 0;
+-    DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE,
+-                          &enable_dark_mode, sizeof(enable_dark_mode));
+-  }
+-}
+diff --git a/packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.h b/packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.h
+deleted file mode 100644
+index e901dde684e..00000000000
+--- a/packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.h
++++ /dev/null
+@@ -1,102 +0,0 @@
+-#ifndef RUNNER_WIN32_WINDOW_H_
+-#define RUNNER_WIN32_WINDOW_H_
+-
+-#include <windows.h>
+-
+-#include <functional>
+-#include <memory>
+-#include <string>
+-
+-// A class abstraction for a high DPI-aware Win32 Window. Intended to be
+-// inherited from by classes that wish to specialize with custom
+-// rendering and input handling
+-class Win32Window {
+- public:
+-  struct Point {
+-    unsigned int x;
+-    unsigned int y;
+-    Point(unsigned int x, unsigned int y) : x(x), y(y) {}
+-  };
+-
+-  struct Size {
+-    unsigned int width;
+-    unsigned int height;
+-    Size(unsigned int width, unsigned int height)
+-        : width(width), height(height) {}
+-  };
+-
+-  Win32Window();
+-  virtual ~Win32Window();
+-
+-  // Creates a win32 window with |title| that is positioned and sized using
+-  // |origin| and |size|. New windows are created on the default monitor. Window
+-  // sizes are specified to the OS in physical pixels, hence to ensure a
+-  // consistent size this function will scale the inputted width and height as
+-  // as appropriate for the default monitor. The window is invisible until
+-  // |Show| is called. Returns true if the window was created successfully.
+-  bool Create(const std::wstring& title, const Point& origin, const Size& size);
+-
+-  // Show the current window. Returns true if the window was successfully shown.
+-  bool Show();
+-
+-  // Release OS resources associated with window.
+-  void Destroy();
+-
+-  // Inserts |content| into the window tree.
+-  void SetChildContent(HWND content);
+-
+-  // Returns the backing Window handle to enable clients to set icon and other
+-  // window properties. Returns nullptr if the window has been destroyed.
+-  HWND GetHandle();
+-
+-  // If true, closing this window will quit the application.
+-  void SetQuitOnClose(bool quit_on_close);
+-
+-  // Return a RECT representing the bounds of the current client area.
+-  RECT GetClientArea();
+-
+- protected:
+-  // Processes and route salient window messages for mouse handling,
+-  // size change and DPI. Delegates handling of these to member overloads that
+-  // inheriting classes can handle.
+-  virtual LRESULT MessageHandler(HWND window,
+-                                 UINT const message,
+-                                 WPARAM const wparam,
+-                                 LPARAM const lparam) noexcept;
+-
+-  // Called when CreateAndShow is called, allowing subclass window-related
+-  // setup. Subclasses should return false if setup fails.
+-  virtual bool OnCreate();
+-
+-  // Called when Destroy is called.
+-  virtual void OnDestroy();
+-
+- private:
+-  friend class WindowClassRegistrar;
+-
+-  // OS callback called by message pump. Handles the WM_NCCREATE message which
+-  // is passed when the non-client area is being created and enables automatic
+-  // non-client DPI scaling so that the non-client area automatically
+-  // responds to changes in DPI. All other messages are handled by
+-  // MessageHandler.
+-  static LRESULT CALLBACK WndProc(HWND const window,
+-                                  UINT const message,
+-                                  WPARAM const wparam,
+-                                  LPARAM const lparam) noexcept;
+-
+-  // Retrieves a class instance pointer for |window|
+-  static Win32Window* GetThisFromHandle(HWND const window) noexcept;
+-
+-  // Update the window frame's theme to match the system theme.
+-  static void UpdateTheme(HWND const window);
+-
+-  bool quit_on_close_ = false;
+-
+-  // window handle for top level window.
+-  HWND window_handle_ = nullptr;
+-
+-  // window handle for hosted content.
+-  HWND child_content_ = nullptr;
+-};
+-
+-#endif  // RUNNER_WIN32_WINDOW_H_
+diff --git a/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl b/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl
+index cfb3dd57b19..c821309e901 100644
+--- a/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl
++++ b/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl
+@@ -5,45 +5,7 @@
+ // gestures. You can also use WidgetTester to find child widgets in the widget
+ // tree, read text, and verify that the values of widget properties are correct.
+ 
+-import 'package:flutter/material.dart';
+-import 'package:flutter_test/flutter_test.dart';
+-
+ import 'package:{{projectName}}/main.dart';
+ 
+-{{^withPluginHook}}
+ void main() {
+-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+-    // Build our app and trigger a frame.
+-    await tester.pumpWidget(const MyApp());
+-
+-    // Verify that our counter starts at 0.
+-    expect(find.text('0'), findsOneWidget);
+-    expect(find.text('1'), findsNothing);
+-
+-    // Tap the '+' icon and trigger a frame.
+-    await tester.tap(find.byIcon(Icons.add));
+-    await tester.pump();
+-
+-    // Verify that our counter has incremented.
+-    expect(find.text('0'), findsNothing);
+-    expect(find.text('1'), findsOneWidget);
+-  });
+-}
+-{{/withPluginHook}}
+-{{#withPlatformChannelPluginHook}}
+-void main() {
+-  testWidgets('Verify Platform version', (WidgetTester tester) async {
+-    // Build our app and trigger a frame.
+-    await tester.pumpWidget(const MyApp());
+-
+-    // Verify that platform version is retrieved.
+-    expect(
+-      find.byWidgetPredicate(
+-        (Widget widget) =>
+-            widget is Text && widget.data!.startsWith('Running on:'),
+-      ),
+-      findsOneWidget,
+-    );
+-  });
+ }
+-{{/withPlatformChannelPluginHook}}
+diff --git a/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl b/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl
+index f05c069c133..c821309e901 100644
+--- a/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl
++++ b/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl
+@@ -5,47 +5,7 @@
+ // gestures. You can also use WidgetTester to find child widgets in the widget
+ // tree, read text, and verify that the values of widget properties are correct.
+ 
+-import 'package:flutter/material.dart';
+-import 'package:flutter_test/flutter_test.dart';
+-
+-{{^withFfi}}
+ import 'package:{{projectName}}/main.dart';
+-{{/withFfi}}
+ 
+-{{^withPluginHook}}
+ void main() {
+-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+-    // Build our app and trigger a frame.
+-    await tester.pumpWidget(const MyApp());
+-
+-    // Verify that our counter starts at 0.
+-    expect(find.text('0'), findsOneWidget);
+-    expect(find.text('1'), findsNothing);
+-
+-    // Tap the '+' icon and trigger a frame.
+-    await tester.tap(find.byIcon(Icons.add));
+-    await tester.pump();
+-
+-    // Verify that our counter has incremented.
+-    expect(find.text('0'), findsNothing);
+-    expect(find.text('1'), findsOneWidget);
+-  });
+-}
+-{{/withPluginHook}}
+-{{#withPlatformChannelPluginHook}}
+-void main() {
+-  testWidgets('Verify Platform version', (WidgetTester tester) async {
+-    // Build our app and trigger a frame.
+-    await tester.pumpWidget(const MyApp());
+-
+-    // Verify that platform version is retrieved.
+-    expect(
+-      find.byWidgetPredicate(
+-        (Widget widget) => widget is Text &&
+-                           widget.data!.startsWith('Running on:'),
+-      ),
+-      findsOneWidget,
+-    );
+-  });
+ }
+-{{/withPlatformChannelPluginHook}}
+diff --git a/packages/flutter_tools/templates/template_manifest.json b/packages/flutter_tools/templates/template_manifest.json
+index c929526623a..cb7de1beadd 100644
+--- a/packages/flutter_tools/templates/template_manifest.json
++++ b/packages/flutter_tools/templates/template_manifest.json
+@@ -16,6 +16,7 @@
+     "templates/app/android-java.tmpl/projectName_android.iml.tmpl",
+     "templates/app/android-kotlin.tmpl/app/build.gradle.kts.tmpl",
+     "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl",
++    "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl",
+     "templates/app/android-kotlin.tmpl/build.gradle.kts.tmpl",
+     "templates/app/android-kotlin.tmpl/projectName_android.iml.tmpl",
+     "templates/app/android.tmpl/.gitignore",
+@@ -124,8 +125,6 @@
+     "templates/app/windows.tmpl/CMakeLists.txt.tmpl",
+     "templates/app/windows.tmpl/flutter/CMakeLists.txt",
+     "templates/app/windows.tmpl/runner/CMakeLists.txt",
+-    "templates/app/windows.tmpl/runner/flutter_window.cpp",
+-    "templates/app/windows.tmpl/runner/flutter_window.h",
+     "templates/app/windows.tmpl/runner/main.cpp.tmpl",
+     "templates/app/windows.tmpl/runner/resource.h",
+     "templates/app/windows.tmpl/runner/resources/app_icon.ico.img.tmpl",
+@@ -133,8 +132,6 @@
+     "templates/app/windows.tmpl/runner/Runner.rc.tmpl",
+     "templates/app/windows.tmpl/runner/utils.cpp",
+     "templates/app/windows.tmpl/runner/utils.h",
+-    "templates/app/windows.tmpl/runner/win32_window.cpp",
+-    "templates/app/windows.tmpl/runner/win32_window.h",
+ 
+     "templates/app_test_widget/test/widget_test.dart.tmpl",
+ 
+-- 
+2.51.2
+

@@ -16,6 +16,7 @@
     "templates/app/android-java.tmpl/projectName_android.iml.tmpl",
     "templates/app/android-kotlin.tmpl/app/build.gradle.kts.tmpl",
     "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl",
+    "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl",
     "templates/app/android-kotlin.tmpl/build.gradle.kts.tmpl",
     "templates/app/android-kotlin.tmpl/projectName_android.iml.tmpl",
     "templates/app/android.tmpl/.gitignore",

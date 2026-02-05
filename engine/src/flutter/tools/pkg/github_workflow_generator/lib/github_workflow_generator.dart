@@ -135,7 +135,9 @@ class ArtifactPublisher {
       final step = steps.beginMap('name', 'Create latest_content_hash.txt');
       final run = step.beginMap('run', '|');
       run.writeln(r'mkdir -p latest_content_hash');
-      run.writeln(r'echo "${{ needs.guard.outputs.engine_content_hash }}" > latest_content_hash/latest_content_hash.txt');
+      run.writeln(
+        r'echo "${{ needs.guard.outputs.engine_content_hash }}" > latest_content_hash/latest_content_hash.txt',
+      );
     }
     {
       final step = steps.beginMap('name', 'Publish latest_content_hash.txt');
@@ -560,7 +562,7 @@ void main(List<String> arguments) {
 
   final on = root.beginMap('on');
   final push = on.beginMap('push');
-  push.write('branches', '["master"]');
+  push.write('branches', '["master", "staging"]');
 
   final env = root.beginMap('env');
   env.write('DEPOT_TOOLS_WIN_TOOLCHAIN', '0');

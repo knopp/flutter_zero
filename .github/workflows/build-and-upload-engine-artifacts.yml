@@ -3,7 +3,7 @@
 name: Engine Artifacts
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "staging"]
 env:
   DEPOT_TOOLS_WIN_TOOLCHAIN: 0
   FLUTTER_PREBUILT_DART_SDK: 1

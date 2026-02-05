@@ -25,6 +25,11 @@ void _dispatchPlatformMessage(String name, ByteData? data, int responseId) {
 }
 
 @pragma('vm:entry-point')
+void _invokeHotRestartListeners() {
+  PlatformDispatcher.instance._invokeHotRestartListeners();
+}
+
+@pragma('vm:entry-point')
 bool _onError(Object error, StackTrace? stackTrace) {
   return PlatformDispatcher.instance._dispatchError(error, stackTrace ?? StackTrace.empty);
 }

@@ -267,6 +267,29 @@ class PlatformDispatcher {
     }
   }
 
+  /// Registers a callback to be called when the application receives a hot restart signal.
+  void registerHotRestartListener(VoidCallback callback) {
+    _hotRestartListeners.add((callback, Zone.current));
+  }
+
+  /// Unregisters a callback from being called when the application receives a hot restart signal.
+  void unregisterHotRestartListener(VoidCallback callback) {
+    _hotRestartListeners.remove((callback, Zone.current));
+  }
+
+  void _invokeHotRestartListeners() {
+    final callbacks = List<(VoidCallback, Zone)>.from(_hotRestartListeners);
+    for (final (callback, zone) in callbacks) {
+      try {
+        _invoke(callback, zone);
+      } catch (e, s) {
+        onError?.call(e, s);
+      }
+    }
+  }
+
+  final List<(VoidCallback, Zone)> _hotRestartListeners = <(VoidCallback, Zone)>[];
+
   /// Set the debug name associated with this platform dispatcher's root
   /// isolate.
   ///

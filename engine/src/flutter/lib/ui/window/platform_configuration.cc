@@ -43,6 +43,9 @@ void PlatformConfiguration::DidCreateIsolate() {
   dispatch_platform_message_.Set(
       tonic::DartState::Current(),
       Dart_GetField(library, tonic::ToDart("_dispatchPlatformMessage")));
+  invoke_hot_restart_listeners_.Set(
+      tonic::DartState::Current(),
+      Dart_GetField(library, tonic::ToDart("_invokeHotRestartListeners")));
 }
 
 bool PlatformConfiguration::SetEngineId(int64_t engine_id) {
@@ -57,6 +60,17 @@ bool PlatformConfiguration::SetEngineId(int64_t engine_id) {
                                                   tonic::ToDart(engine_id),
                                               }));
   return true;
+}
+
+void PlatformConfiguration::InvokeHotRestartListeners() {
+  std::shared_ptr<tonic::DartState> dart_state =
+      invoke_hot_restart_listeners_.dart_state().lock();
+  if (!dart_state) {
+    return;
+  }
+  tonic::DartState::Scope scope(dart_state);
+  tonic::CheckAndHandleError(
+      tonic::DartInvoke(invoke_hot_restart_listeners_.Get(), {}));
 }
 
 void PlatformConfiguration::UpdateLocales(

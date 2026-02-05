@@ -117,6 +117,10 @@ bool Engine::Restart(RunConfiguration configuration) {
     FML_LOG(ERROR) << "Engine run configuration was invalid.";
     return false;
   }
+  auto isolate = runtime_controller_->GetRootIsolate().lock();
+  if (isolate) {
+    isolate->platform_configuration()->InvokeHotRestartListeners();
+  }
   delegate_.OnPreEngineRestart();
   runtime_controller_ = runtime_controller_->Clone();
   UpdateAssetManager(nullptr);

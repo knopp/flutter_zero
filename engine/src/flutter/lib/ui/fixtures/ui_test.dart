@@ -283,6 +283,24 @@ void hooksTests() async {
     expectEquals(name, 'testName');
   });
 
+  await test('invokeHotRestartListeners preserves callback zone', () {
+    late Zone innerZone;
+    late Zone runZone;
+    late String name;
+
+    runZoned(() {
+      innerZone = Zone.current;
+      PlatformDispatcher.instance.registerHotRestartListener(() {
+        runZone = Zone.current;
+        name = 'testName';
+      });
+    });
+
+    _callHook('_invokeHotRestartListeners', 0);
+    expectIdentical(runZone, innerZone);
+    expectEquals(name, 'testName');
+  });
+
   await test('_futureize successfully returns a value async', () async {
     String? callbacker(void Function(Object? arg) cb) {
       Timer.run(() {

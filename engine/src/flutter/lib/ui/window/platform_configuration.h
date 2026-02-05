@@ -220,6 +220,9 @@ class PlatformConfiguration final {
   /// @return    Whether the identifier was set.
   bool SetEngineId(int64_t engine_id);
 
+  /// @brief     Calls registered hot restart listener callbacks.
+  void InvokeHotRestartListeners();
+
   //----------------------------------------------------------------------------
   /// @brief      Update the specified locale data in the framework.
   ///
@@ -268,6 +271,7 @@ class PlatformConfiguration final {
   tonic::DartPersistentValue set_engine_id_;
   tonic::DartPersistentValue update_locales_;
   tonic::DartPersistentValue dispatch_platform_message_;
+  tonic::DartPersistentValue invoke_hot_restart_listeners_;
 
   // ID starts at 1 because an ID of 0 indicates that no response is expected.
   int next_response_id_ = 1;

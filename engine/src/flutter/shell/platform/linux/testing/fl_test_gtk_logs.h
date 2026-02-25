@@ -5,7 +5,7 @@
 #ifndef FLUTTER_SHELL_PLATFORM_LINUX_TESTING_FL_TEST_GTK_LOGS_H_
 #define FLUTTER_SHELL_PLATFORM_LINUX_TESTING_FL_TEST_GTK_LOGS_H_
 
-#include <gtk/gtk.h>
+#include <glib.h>
 
 namespace flutter {
 namespace testing {

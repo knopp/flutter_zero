@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gtk/gtk.h>
-
 // Included first as it collides with the X11 headers.
 #include "gtest/gtest.h"
 

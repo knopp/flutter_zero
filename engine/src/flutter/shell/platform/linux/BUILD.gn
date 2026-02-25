@@ -69,7 +69,7 @@ source_set("flutter_linux_sources") {
              "fl_task_runner.h",
            ]
 
-  configs += [ "//flutter/shell/platform/linux/config:gtk" ]
+  configs += [ "//flutter/shell/platform/linux/config:glib" ]
 
   public_configs = [ ":disable_warnings" ]
 
@@ -94,7 +94,7 @@ source_set("flutter_linux_sources") {
     "fl_string_codec.cc",
     "fl_task_runner.cc",
     "fl_value.cc",
-    ]
+  ]
 
   # Set flag to stop headers being directly included (library users should not do this)
   defines = [
@@ -114,7 +114,7 @@ source_set("flutter_linux_sources") {
 
 source_set("flutter_linux") {
   configs += [
-    "//flutter/shell/platform/linux/config:gtk",
+    "//flutter/shell/platform/linux/config:glib",
     "//flutter/shell/platform/linux/config:epoxy",
   ]
 
@@ -162,7 +162,6 @@ executable("flutter_linux_unittests") {
     "testing/fl_test_gtk_logs.cc",
     "testing/fl_test_gtk_logs.h",
     "testing/mock_engine.cc",
-    "testing/mock_gtk.cc",
     "testing/mock_plugin_registrar.cc",
     "testing/mock_signal_handler.cc",
   ]
@@ -170,7 +169,7 @@ executable("flutter_linux_unittests") {
   public_configs = [ "//flutter:config" ]
 
   configs += [
-    "//flutter/shell/platform/linux/config:gtk",
+    "//flutter/shell/platform/linux/config:glib",
     "//flutter/shell/platform/linux/config:epoxy",
   ]
 

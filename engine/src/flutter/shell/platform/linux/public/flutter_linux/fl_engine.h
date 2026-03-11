@@ -71,9 +71,9 @@ gboolean fl_engine_start(FlEngine* engine, GError** error);
 FlBinaryMessenger* fl_engine_get_binary_messenger(FlEngine* engine);
 
 /*
- * Blocks until a Flutter message is posted on task runner and processes it.
- * Must be called on platform thread. During polling no other system messages
- * are processed.
+ * Blocks until a Flutter message is posted on task runner and then processes
+ * it. Must be called on platform thread. During polling no other system
+ * messages are processed.
  */
 void fl_engine_poll_task_runner(FlEngine* self);
 

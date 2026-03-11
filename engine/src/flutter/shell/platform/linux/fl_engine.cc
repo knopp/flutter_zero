@@ -583,3 +583,9 @@ void fl_engine_execute_task(FlEngine* self, FlutterTask* task) {
     g_warning("Failed to run task");
   }
 }
+
+G_MODULE_EXPORT void fl_engine_poll_task_runner(FlEngine* self) {
+  g_return_if_fail(FL_IS_ENGINE(self));
+
+  fl_task_runner_wait(self->task_runner);
+}

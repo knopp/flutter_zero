@@ -742,7 +742,7 @@ bool PlatformView::HandleFlutterPlatformViewsChannelPlatformMessage(
     FML_LOG(ERROR) << "Could not parse document";
     return false;
   }
-  auto root = document.GetObject();
+  auto root = document.getObj();
   auto method_member = root.FindMember("method");
   if (method_member == root.MemberEnd() || !method_member->value.IsString()) {
     return false;
@@ -931,7 +931,7 @@ bool PlatformView::HandleFuchsiaShaderWarmupChannelPlatformMessage(
     FML_LOG(ERROR) << "Could not parse document";
     return false;
   }
-  auto root = document.GetObject();
+  auto root = document.GetObj();
   auto method = root.FindMember("method");
   if (method == root.MemberEnd() || !method->value.IsString() ||
       method->value != "WarmupSkps") {
@@ -1001,7 +1001,7 @@ bool PlatformView::HandleFuchsiaInputTestChannelPlatformMessage(
     FML_LOG(ERROR) << "Could not parse document";
     return false;
   }
-  auto root = document.GetObject();
+  auto root = document.GetObj();
   auto method = root.FindMember("method");
   if (method == root.MemberEnd() || !method->value.IsString()) {
     FML_LOG(ERROR) << "Missing method";

@@ -22,7 +22,7 @@ rapidjson::Value ParsePlatformMessage(std::string json) {
     FML_LOG(ERROR) << "Could not parse document";
     return rapidjson::Value();
   }
-  return document.GetObject();
+  return document.GetObj();
 }
 
 namespace flutter_runner::testing {

@@ -254,7 +254,7 @@ bool TextDelegate::HandleFlutterTextInputChannelPlatformMessage(
   if (document.HasParseError() || !document.IsObject()) {
     return false;
   }
-  auto root = document.GetObject();
+  auto root = document.GetObj();
   auto method = root.FindMember("method");
   if (method == root.MemberEnd() || !method->value.IsString()) {
     return false;

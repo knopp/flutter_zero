@@ -42,7 +42,7 @@ rapidjson::Value ParsePlatformMessage(std::string json) {
     FML_LOG(ERROR) << "Could not parse document";
     return rapidjson::Value();
   }
-  return document.GetObject();
+  return document.GetObj();
 }
 
 zx_koid_t ExtractKoid(const zx::object_base& object) {

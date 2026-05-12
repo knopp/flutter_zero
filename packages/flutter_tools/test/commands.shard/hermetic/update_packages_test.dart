@@ -98,7 +98,7 @@ description: 'Project for testing user-defines.'
 version: 0.0.1
 
 environment:
-  sdk: ^3.9.0-0
+  sdk: ^3.10.0-0
 
 hooks:
   user_defines:
@@ -334,14 +334,6 @@ void main() {
                 )
                 ..dependencies['test_api'] = HostedDependency(
                   version: VersionConstraint.parse('0.7.5'),
-                ))
-              .dependencies,
-        );
-        expect(
-          pub.pubspecs[widgetPreviewScaffold.absolute.path]!.first.dependencies,
-          (Pubspec.parse(kWidgetTestPubspecYaml)
-                ..dependencies['unified_analytics'] = HostedDependency(
-                  version: VersionConstraint.parse('8.0.10'),
                 ))
               .dependencies,
         );

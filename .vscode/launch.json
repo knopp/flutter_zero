@@ -73,7 +73,7 @@
             "program": "lib/main.dart",
             "osx": {
                 "toolArgs": [
-                    "--local-engine=ios_debug_sim_unopt_arm64",
+                    "--local-engine=ios_debug_sim_arm64",
                     "--local-engine-host=host_debug_unopt_arm64",
                 ]
             },
@@ -86,7 +86,7 @@
             "program": "lib/main.dart",
             "osx": {
                 "toolArgs": [
-                    "--local-engine=android_debug_unopt_arm64",
+                    "--local-engine=android_debug_arm64",
                     "--local-engine-host=host_debug_unopt_arm64",
                 ]
             },

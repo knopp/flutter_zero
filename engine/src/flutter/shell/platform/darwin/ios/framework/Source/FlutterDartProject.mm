@@ -213,9 +213,13 @@ flutter::Settings FLTDefaultSettingsForBundle(NSBundle* bundle, NSProcessInfo* p
 
   // This is the formula Android uses.
   // https://android.googlesource.com/platform/frameworks/base/+/39ae5bac216757bc201490f4c7b8c0f63006c6cd/libs/hwui/renderthread/CacheManager.cpp#45
-  CGFloat scale = [UIScreen mainScreen].scale;
-  CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width * scale;
-  CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height * scale;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  UIScreen* mainScreen = [UIScreen mainScreen];
+#pragma clang diagnostic pop
+  CGFloat scale = mainScreen.scale;
+  CGFloat screenWidth = mainScreen.bounds.size.width * scale;
+  CGFloat screenHeight = mainScreen.bounds.size.height * scale;
   settings.resource_cache_max_bytes_threshold = screenWidth * screenHeight * 12 * 4;
 
   return settings;

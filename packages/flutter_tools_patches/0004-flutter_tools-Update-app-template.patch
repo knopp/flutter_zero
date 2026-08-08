@@ -1,16 +1,16 @@
-From 41ae39aadb4265bd8a62a91e19c4b42114ec1485 Mon Sep 17 00:00:00 2001
+From 77b5f000e5ef3369fe81497da1585005a5312db7 Mon Sep 17 00:00:00 2001
 From: Matej Knopp <matej.knopp@gmail.com>
-Date: Fri, 23 Jan 2026 20:45:03 +0100
-Subject: [PATCH] flutter_tools: Update app template. (#2)
+Date: Sat, 8 Aug 2026 20:13:45 +0200
+Subject: [PATCH] flutter_tools: Update app template.
 
 ---
  .../androidIdentifier/Application.kt.tmpl     |  47 +++
  .../androidIdentifier/MainActivity.kt.tmpl    |   4 +-
  .../app/src/main/AndroidManifest.xml.tmpl     |   2 +-
  .../app/ios.tmpl/Runner/AppDelegate.swift     |  11 +-
- .../templates/app/lib/main.dart.tmpl          | 273 -----------------
+ .../templates/app/lib/main.dart.tmpl          | 272 -----------------
  .../linux.tmpl/runner/my_application.cc.tmpl  |  66 +---
- .../Runner.xcodeproj/project.pbxproj.tmpl     |   4 -
+ .../Runner.xcodeproj/project.pbxproj.tmpl     |   6 +-
  .../app/macos.tmpl/Runner/AppDelegate.swift   |   8 +
  .../macos.tmpl/Runner/Base.lproj/MainMenu.xib |  16 +-
  .../macos.tmpl/Runner/MainFlutterWindow.swift |  15 -
@@ -22,10 +22,7 @@ Subject: [PATCH] flutter_tools: Update app template. (#2)
  .../app/windows.tmpl/runner/main.cpp.tmpl     |  11 +-
  .../app/windows.tmpl/runner/win32_window.cpp  | 288 ------------------
  .../app/windows.tmpl/runner/win32_window.h    | 102 -------
- .../test/widget_test.dart.tmpl                |  38 ---
- .../module/common/test/widget_test.dart.tmpl  |  40 ---
- .../templates/template_manifest.json          |   5 +-
- 21 files changed, 83 insertions(+), 1080 deletions(-)
+ 18 files changed, 83 insertions(+), 998 deletions(-)
  create mode 100644 packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl
  delete mode 100644 packages/flutter_tools/templates/app/macos.tmpl/Runner/MainFlutterWindow.swift
  delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.cpp
@@ -138,10 +135,10 @@ index c30b367ec0a..d53b76aa22c 100644
 -  }
  }
 diff --git a/packages/flutter_tools/templates/app/lib/main.dart.tmpl b/packages/flutter_tools/templates/app/lib/main.dart.tmpl
-index 908eab5614a..34f46e2429c 100644
+index a23bfa403cc..34f46e2429c 100644
 --- a/packages/flutter_tools/templates/app/lib/main.dart.tmpl
 +++ b/packages/flutter_tools/templates/app/lib/main.dart.tmpl
-@@ -1,275 +1,2 @@
+@@ -1,274 +1,2 @@
 -import 'package:flutter/material.dart';
 -{{#withEmptyMain}}
 -
@@ -155,23 +152,21 @@ index 908eab5614a..34f46e2429c 100644
 -  @override
 -  Widget build(BuildContext context) {
 -    return const MaterialApp(
--      home: Scaffold(
--        body: Center(
--          child: Text('Hello World!'),
--        ),
--      ),
+-      home: Scaffold(body: Center(child: Text('Hello World!'))),
 -    );
 -  }
 -}
 -{{/withEmptyMain}}
 -{{^withEmptyMain}}
 -{{#withPlatformChannelPluginHook}}
+-
 -import 'dart:async';
 -
 -import 'package:flutter/services.dart';
 -import 'package:{{pluginProjectName}}/{{pluginProjectName}}.dart';
 -{{/withPlatformChannelPluginHook}}
 -{{#withFfi}}
+-
 -import 'dart:async';
 -
 -import 'package:{{pluginProjectName}}/{{pluginProjectName}}.dart' as {{pluginProjectName}};
@@ -324,7 +319,8 @@ index 908eab5614a..34f46e2429c 100644
 -    // We also handle the message potentially returning null.
 -    try {
 -      platformVersion =
--          await _{{pluginClassLowerCamelCase}}.getPlatformVersion() ?? 'Unknown platform version';
+-          await _{{pluginClassLowerCamelCase}}.getPlatformVersion() ??
+-          'Unknown platform version';
 -    } on PlatformException {
 -      platformVersion = 'Failed to get platform version.';
 -    }
@@ -507,7 +503,7 @@ index 3b8611caea9..6ff97760cce 100644
  
  // Implements GApplication::local_command_line.
 diff --git a/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl b/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl
-index ddedff58320..28a05200ec3 100644
+index df23141c33c..7f23782db6c 100644
 --- a/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl
 +++ b/packages/flutter_tools/templates/app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl
 @@ -26,7 +26,6 @@
@@ -542,6 +538,15 @@ index ddedff58320..28a05200ec3 100644
  				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
  				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
  			);
+@@ -623,7 +619,7 @@
+ 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+ 				GCC_WARN_UNUSED_FUNCTION = YES;
+ 				GCC_WARN_UNUSED_VARIABLE = YES;
+-				MACOSX_DEPLOYMENT_TARGET = 12.0;
++				MACOSX_DEPLOYMENT_TARGET = 10.15;
+ 				MTL_ENABLE_DEBUG_INFO = NO;
+ 				SDKROOT = macosx;
+ 				SWIFT_COMPILATION_MODE = wholemodule;
 diff --git a/packages/flutter_tools/templates/app/macos.tmpl/Runner/AppDelegate.swift b/packages/flutter_tools/templates/app/macos.tmpl/Runner/AppDelegate.swift
 index b3c17614122..7ef3fae6f72 100644
 --- a/packages/flutter_tools/templates/app/macos.tmpl/Runner/AppDelegate.swift
@@ -1338,138 +1343,6 @@ index e901dde684e..00000000000
 -};
 -
 -#endif  // RUNNER_WIN32_WINDOW_H_
-diff --git a/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl b/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl
-index cfb3dd57b19..c821309e901 100644
---- a/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl
-+++ b/packages/flutter_tools/templates/app_test_widget/test/widget_test.dart.tmpl
-@@ -5,45 +5,7 @@
- // gestures. You can also use WidgetTester to find child widgets in the widget
- // tree, read text, and verify that the values of widget properties are correct.
- 
--import 'package:flutter/material.dart';
--import 'package:flutter_test/flutter_test.dart';
--
- import 'package:{{projectName}}/main.dart';
- 
--{{^withPluginHook}}
- void main() {
--  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
--    // Build our app and trigger a frame.
--    await tester.pumpWidget(const MyApp());
--
--    // Verify that our counter starts at 0.
--    expect(find.text('0'), findsOneWidget);
--    expect(find.text('1'), findsNothing);
--
--    // Tap the '+' icon and trigger a frame.
--    await tester.tap(find.byIcon(Icons.add));
--    await tester.pump();
--
--    // Verify that our counter has incremented.
--    expect(find.text('0'), findsNothing);
--    expect(find.text('1'), findsOneWidget);
--  });
--}
--{{/withPluginHook}}
--{{#withPlatformChannelPluginHook}}
--void main() {
--  testWidgets('Verify Platform version', (WidgetTester tester) async {
--    // Build our app and trigger a frame.
--    await tester.pumpWidget(const MyApp());
--
--    // Verify that platform version is retrieved.
--    expect(
--      find.byWidgetPredicate(
--        (Widget widget) =>
--            widget is Text && widget.data!.startsWith('Running on:'),
--      ),
--      findsOneWidget,
--    );
--  });
- }
--{{/withPlatformChannelPluginHook}}
-diff --git a/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl b/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl
-index f05c069c133..c821309e901 100644
---- a/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl
-+++ b/packages/flutter_tools/templates/module/common/test/widget_test.dart.tmpl
-@@ -5,47 +5,7 @@
- // gestures. You can also use WidgetTester to find child widgets in the widget
- // tree, read text, and verify that the values of widget properties are correct.
- 
--import 'package:flutter/material.dart';
--import 'package:flutter_test/flutter_test.dart';
--
--{{^withFfi}}
- import 'package:{{projectName}}/main.dart';
--{{/withFfi}}
- 
--{{^withPluginHook}}
- void main() {
--  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
--    // Build our app and trigger a frame.
--    await tester.pumpWidget(const MyApp());
--
--    // Verify that our counter starts at 0.
--    expect(find.text('0'), findsOneWidget);
--    expect(find.text('1'), findsNothing);
--
--    // Tap the '+' icon and trigger a frame.
--    await tester.tap(find.byIcon(Icons.add));
--    await tester.pump();
--
--    // Verify that our counter has incremented.
--    expect(find.text('0'), findsNothing);
--    expect(find.text('1'), findsOneWidget);
--  });
--}
--{{/withPluginHook}}
--{{#withPlatformChannelPluginHook}}
--void main() {
--  testWidgets('Verify Platform version', (WidgetTester tester) async {
--    // Build our app and trigger a frame.
--    await tester.pumpWidget(const MyApp());
--
--    // Verify that platform version is retrieved.
--    expect(
--      find.byWidgetPredicate(
--        (Widget widget) => widget is Text &&
--                           widget.data!.startsWith('Running on:'),
--      ),
--      findsOneWidget,
--    );
--  });
- }
--{{/withPlatformChannelPluginHook}}
-diff --git a/packages/flutter_tools/templates/template_manifest.json b/packages/flutter_tools/templates/template_manifest.json
-index c929526623a..cb7de1beadd 100644
---- a/packages/flutter_tools/templates/template_manifest.json
-+++ b/packages/flutter_tools/templates/template_manifest.json
-@@ -16,6 +16,7 @@
-     "templates/app/android-java.tmpl/projectName_android.iml.tmpl",
-     "templates/app/android-kotlin.tmpl/app/build.gradle.kts.tmpl",
-     "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl",
-+    "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl",
-     "templates/app/android-kotlin.tmpl/build.gradle.kts.tmpl",
-     "templates/app/android-kotlin.tmpl/projectName_android.iml.tmpl",
-     "templates/app/android.tmpl/.gitignore",
-@@ -124,8 +125,6 @@
-     "templates/app/windows.tmpl/CMakeLists.txt.tmpl",
-     "templates/app/windows.tmpl/flutter/CMakeLists.txt",
-     "templates/app/windows.tmpl/runner/CMakeLists.txt",
--    "templates/app/windows.tmpl/runner/flutter_window.cpp",
--    "templates/app/windows.tmpl/runner/flutter_window.h",
-     "templates/app/windows.tmpl/runner/main.cpp.tmpl",
-     "templates/app/windows.tmpl/runner/resource.h",
-     "templates/app/windows.tmpl/runner/resources/app_icon.ico.img.tmpl",
-@@ -133,8 +132,6 @@
-     "templates/app/windows.tmpl/runner/Runner.rc.tmpl",
-     "templates/app/windows.tmpl/runner/utils.cpp",
-     "templates/app/windows.tmpl/runner/utils.h",
--    "templates/app/windows.tmpl/runner/win32_window.cpp",
--    "templates/app/windows.tmpl/runner/win32_window.h",
- 
-     "templates/app_test_widget/test/widget_test.dart.tmpl",
- 
 -- 
 2.51.2
 

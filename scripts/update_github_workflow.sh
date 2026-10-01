@@ -19,4 +19,5 @@ ${REPO_PATH}/bin/dart flutter/tools/pkg/github_workflow_generator/bin/run.dart \
     -i flutter/ci/builders/linux_android_aot_engine.json \
     -i flutter/ci/builders/linux_android_debug_engine.json \
     -i flutter/ci/builders/linux_web_engine_build.json \
+    -t flutter/tools/pkg/github_workflow_generator/artifact_tests.json \
     -o "${REPO_PATH}/.github/workflows/build-and-upload-engine-artifacts.yml"

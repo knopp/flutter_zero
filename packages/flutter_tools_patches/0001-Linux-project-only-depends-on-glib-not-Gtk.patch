@@ -1,0 +1,224 @@
+From d9c8450347bb880b6b59c450775dc8061c0fefb6 Mon Sep 17 00:00:00 2001
+From: Matej Knopp <matej.knopp@gmail.com>
+Date: Tue, 29 Sep 2026 22:06:20 +0200
+Subject: [PATCH] Linux project only depends on glib, not Gtk
+
+---
+ .../flutter_tools/lib/src/base/user_messages.dart   |  4 ++--
+ .../flutter_tools/lib/src/linux/linux_doctor.dart   |  4 ++--
+ .../templates/app/linux.tmpl/CMakeLists.txt.tmpl    |  5 +++--
+ .../templates/app/linux.tmpl/flutter/CMakeLists.txt |  2 --
+ .../templates/app/linux.tmpl/runner/CMakeLists.txt  |  2 +-
+ .../app/linux.tmpl/runner/my_application.cc.tmpl    |  9 +++------
+ .../app/linux.tmpl/runner/my_application.h          |  4 ++--
+ .../templates/plugin/linux.tmpl/CMakeLists.txt.tmpl |  4 ++--
+ .../test/general.shard/linux/linux_doctor_test.dart | 13 ++++---------
+ 9 files changed, 19 insertions(+), 28 deletions(-)
+
+diff --git a/packages/flutter_tools/lib/src/base/user_messages.dart b/packages/flutter_tools/lib/src/base/user_messages.dart
+index 608e75b5e0a..40d56b8fd20 100644
+--- a/packages/flutter_tools/lib/src/base/user_messages.dart
++++ b/packages/flutter_tools/lib/src/base/user_messages.dart
+@@ -161,8 +161,8 @@ class UserMessages {
+   String pkgConfigTooOld(String minimumVersion) =>
+       'pkg-config $minimumVersion or later is required.';
+   String get gtkLibrariesMissing =>
+-      'GTK 3.0 development libraries are required for Linux development.\n'
+-      'They are likely available from your distribution (e.g.: apt install libgtk-3-dev)';
++      'GLib development libraries are required for Linux development.\n'
++      'They are likely available from your distribution (e.g.: apt install libglib2.0-dev)';
+   String get eglinfoMissing =>
+       "Unable to access driver information using 'eglinfo'.\n"
+       'It is likely available from your distribution (e.g.: apt install mesa-utils)';
+diff --git a/packages/flutter_tools/lib/src/linux/linux_doctor.dart b/packages/flutter_tools/lib/src/linux/linux_doctor.dart
+index 2900f7dac6d..2024b92c274 100644
+--- a/packages/flutter_tools/lib/src/linux/linux_doctor.dart
++++ b/packages/flutter_tools/lib/src/linux/linux_doctor.dart
+@@ -137,7 +137,7 @@ class LinuxDoctorValidator extends DoctorValidator {
+     kPkgConfigBinary: Version(0, 29, 0),
+   };
+ 
+-  final _requiredGtkLibraries = <String>['gtk+-3.0', 'glib-2.0', 'gio-2.0'];
++  final _requiredGLibLibraries = <String>['glib-2.0', 'gio-2.0'];
+ 
+   @override
+   Future<ValidationResult> validateImpl() async {
+@@ -234,7 +234,7 @@ class LinuxDoctorValidator extends DoctorValidator {
+     // Messages for libraries.
+     {
+       var libraryMissing = false;
+-      for (final String library in _requiredGtkLibraries) {
++      for (final String library in _requiredGLibLibraries) {
+         if (!await _libraryIsPresent(library)) {
+           libraryMissing = true;
+           break;
+diff --git a/packages/flutter_tools/templates/app/linux.tmpl/CMakeLists.txt.tmpl b/packages/flutter_tools/templates/app/linux.tmpl/CMakeLists.txt.tmpl
+index f710aa3d4ef..ddcafc32e2c 100644
+--- a/packages/flutter_tools/templates/app/linux.tmpl/CMakeLists.txt.tmpl
++++ b/packages/flutter_tools/templates/app/linux.tmpl/CMakeLists.txt.tmpl
+@@ -5,7 +5,7 @@ project(runner LANGUAGES CXX)
+ # The name of the executable created for the application. Change this to change
+ # the on-disk name of your application.
+ set(BINARY_NAME "{{projectName}}")
+-# The unique GTK application identifier for this application. See:
++# The unique application identifier for this application. See:
+ # https://wiki.gnome.org/HowDoI/ChooseApplicationID
+ set(APPLICATION_ID "{{linuxIdentifier}}")
+ 
+@@ -52,7 +52,8 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
+ 
+ # System-level dependencies.
+ find_package(PkgConfig REQUIRED)
+-pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
++pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
++pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-2.0)
+ 
+ # Application build; see runner/CMakeLists.txt.
+ add_subdirectory("runner")
+diff --git a/packages/flutter_tools/templates/app/linux.tmpl/flutter/CMakeLists.txt b/packages/flutter_tools/templates/app/linux.tmpl/flutter/CMakeLists.txt
+index d5bd01648a9..5fc74f9cb49 100644
+--- a/packages/flutter_tools/templates/app/linux.tmpl/flutter/CMakeLists.txt
++++ b/packages/flutter_tools/templates/app/linux.tmpl/flutter/CMakeLists.txt
+@@ -22,7 +22,6 @@ endfunction()
+ # === Flutter Library ===
+ # System-level dependencies.
+ find_package(PkgConfig REQUIRED)
+-pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
+ pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
+ pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-2.0)
+ 
+@@ -63,7 +62,6 @@ target_include_directories(flutter INTERFACE
+ )
+ target_link_libraries(flutter INTERFACE "${FLUTTER_LIBRARY}")
+ target_link_libraries(flutter INTERFACE
+-  PkgConfig::GTK
+   PkgConfig::GLIB
+   PkgConfig::GIO
+ )
+diff --git a/packages/flutter_tools/templates/app/linux.tmpl/runner/CMakeLists.txt b/packages/flutter_tools/templates/app/linux.tmpl/runner/CMakeLists.txt
+index e97dabc7028..bf63b0bd7bc 100644
+--- a/packages/flutter_tools/templates/app/linux.tmpl/runner/CMakeLists.txt
++++ b/packages/flutter_tools/templates/app/linux.tmpl/runner/CMakeLists.txt
+@@ -21,6 +21,6 @@ add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
+ 
+ # Add dependency libraries. Add any application-specific dependencies here.
+ target_link_libraries(${BINARY_NAME} PRIVATE flutter)
+-target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
++target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GLIB PkgConfig::GIO)
+ 
+ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
+diff --git a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
+index 6ff97760cce..8a5eddb8624 100644
+--- a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
++++ b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
+@@ -1,19 +1,16 @@
+ #include "my_application.h"
+ 
+ #include <flutter_linux/flutter_linux.h>
+-#ifdef GDK_WINDOWING_X11
+-#include <gdk/gdkx.h>
+-#endif
+ 
+ #include "flutter/generated_plugin_registrant.h"
+ 
+ struct _MyApplication {
+-  GtkApplication parent_instance;
++  GApplication parent_instance;
+   char** dart_entrypoint_arguments;
+   FlEngine *engine;
+ };
+ 
+-G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
++G_DEFINE_TYPE(MyApplication, my_application, G_TYPE_APPLICATION)
+ 
+ // Implements GApplication::activate.
+ static void my_application_activate(GApplication *application) {
+@@ -95,7 +92,7 @@ static void my_application_init(MyApplication* self) {}
+ 
+ MyApplication* my_application_new() {
+   // Set the program name to the application ID, which helps various systems
+-  // like GTK and desktop environments map this running application to its
++  // like desktop environments map this running application to its
+   // corresponding .desktop file. This ensures better integration by allowing
+   // the application to be recognized beyond its binary name.
+   g_set_prgname(APPLICATION_ID);
+diff --git a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.h b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.h
+index db16367a77d..43759e8c46f 100644
+--- a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.h
++++ b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.h
+@@ -1,13 +1,13 @@
+ #ifndef FLUTTER_MY_APPLICATION_H_
+ #define FLUTTER_MY_APPLICATION_H_
+ 
+-#include <gtk/gtk.h>
++#include <gio/gio.h>
+ 
+ G_DECLARE_FINAL_TYPE(MyApplication,
+                      my_application,
+                      MY,
+                      APPLICATION,
+-                     GtkApplication)
++                     GApplication)
+ 
+ /**
+  * my_application_new:
+diff --git a/packages/flutter_tools/templates/plugin/linux.tmpl/CMakeLists.txt.tmpl b/packages/flutter_tools/templates/plugin/linux.tmpl/CMakeLists.txt.tmpl
+index 2d8110fe75c..eb1a2ddf55f 100644
+--- a/packages/flutter_tools/templates/plugin/linux.tmpl/CMakeLists.txt.tmpl
++++ b/packages/flutter_tools/templates/plugin/linux.tmpl/CMakeLists.txt.tmpl
+@@ -39,7 +39,7 @@ target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
+ target_include_directories(${PLUGIN_NAME} INTERFACE
+   "${CMAKE_CURRENT_SOURCE_DIR}/include")
+ target_link_libraries(${PLUGIN_NAME} PRIVATE flutter)
+-target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GTK)
++target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GLIB PkgConfig::GIO)
+ 
+ # List of absolute paths to libraries that should be bundled with the plugin.
+ # This list could contain prebuilt libraries, or libraries created by an
+@@ -83,7 +83,7 @@ add_executable(${TEST_RUNNER}
+ apply_standard_settings(${TEST_RUNNER})
+ target_include_directories(${TEST_RUNNER} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+ target_link_libraries(${TEST_RUNNER} PRIVATE flutter)
+-target_link_libraries(${TEST_RUNNER} PRIVATE PkgConfig::GTK)
++target_link_libraries(${TEST_RUNNER} PRIVATE PkgConfig::GLIB PkgConfig::GIO)
+ target_link_libraries(${TEST_RUNNER} PRIVATE gtest_main gmock)
+ 
+ # Enable automatic test discovery.
+diff --git a/packages/flutter_tools/test/general.shard/linux/linux_doctor_test.dart b/packages/flutter_tools/test/general.shard/linux/linux_doctor_test.dart
+index e0790da9475..370bc3248cb 100644
+--- a/packages/flutter_tools/test/general.shard/linux/linux_doctor_test.dart
++++ b/packages/flutter_tools/test/general.shard/linux/linux_doctor_test.dart
+@@ -60,13 +60,9 @@ FakeCommand _libraryCheckCommand(String library, {bool exists = true}) {
+   );
+ }
+ 
+-// Commands that give positive replies for all the GTK library pkg-config queries.
++// Commands that give positive replies for all the GLib library pkg-config queries.
+ List<FakeCommand> _gtkLibrariesPresentCommands() {
+-  return <FakeCommand>[
+-    _libraryCheckCommand('gtk+-3.0'),
+-    _libraryCheckCommand('glib-2.0'),
+-    _libraryCheckCommand('gio-2.0'),
+-  ];
++  return <FakeCommand>[_libraryCheckCommand('glib-2.0'), _libraryCheckCommand('gio-2.0')];
+ }
+ 
+ // A command that will return typical-looking 'eglinfo' output
+@@ -169,12 +165,11 @@ FakeCommand _eglinfoMissingCommand() {
+   );
+ }
+ 
+-// Commands that give some failures for the GTK library pkg-config queries.
++// Commands that give some failures for the GLib library pkg-config queries.
+ List<FakeCommand> _gtkLibrariesMissingCommands() {
+   return <FakeCommand>[
+-    _libraryCheckCommand('gtk+-3.0'),
+     _libraryCheckCommand('glib-2.0', exists: false),
+-    // No more entries, since the first missing GTK library stops the
++    // No more entries, since the first missing library stops the
+     // checks.
+   ];
+ }
+-- 
+2.51.2
+

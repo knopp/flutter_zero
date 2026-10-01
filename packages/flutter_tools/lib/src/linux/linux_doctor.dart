@@ -137,7 +137,7 @@ class LinuxDoctorValidator extends DoctorValidator {
     kPkgConfigBinary: Version(0, 29, 0),
   };
 
-  final _requiredGtkLibraries = <String>['gtk+-3.0', 'glib-2.0', 'gio-2.0'];
+  final _requiredGLibLibraries = <String>['glib-2.0', 'gio-2.0'];
 
   @override
   Future<ValidationResult> validateImpl() async {
@@ -234,7 +234,7 @@ class LinuxDoctorValidator extends DoctorValidator {
     // Messages for libraries.
     {
       var libraryMissing = false;
-      for (final String library in _requiredGtkLibraries) {
+      for (final String library in _requiredGLibLibraries) {
         if (!await _libraryIsPresent(library)) {
           libraryMissing = true;
           break;

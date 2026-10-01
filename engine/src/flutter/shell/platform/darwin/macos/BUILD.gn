@@ -111,18 +111,27 @@ test_fixtures("flutter_desktop_darwin_fixtures") {
   fixtures = [ "//flutter/third_party/icu/common/icudtl.dat" ]
 }
 
-executable("flutter_desktop_darwin_swift_unittests") {
-  testonly = true
-  public_configs = [
-    "//flutter/shell/platform/darwin/common:config",
-    "//flutter/shell/platform/darwin/common:test_config",
-    "//flutter/shell/platform/darwin/common:swift_testing_config",
-  ]
-  sources = [ "framework/Source/ResizeSynchronizerTest.swift" ]
-  deps = [
-    ":flutter_framework_source",
-    "//flutter/shell/platform/darwin/common:swift_testing_main",
-    "//flutter/shell/platform/darwin/common:test_utils_swift",
+
+# Keeps the Dart VM snapshot blobs of the engine inside the test executable.
+#
+# The blobs are resolved at runtime with dlsym from the current process, and
+# nothing references them statically. In builds where the mac linker is asked
+# to dead strip, they would otherwise be removed, and the Dart VM creation of
+# the engine would fail.
+config("flutter_desktop_darwin_unittests_engine_snapshot") {
+  ldflags = [
+    "-Xlinker",
+    "-u",
+    "-Xlinker",
+    "_kDartSnapshotData",
+    "-Xlinker",
+    "-u",
+    "-Xlinker",
+    "_kDartSnapshotText",
+    "-Xlinker",
+    "-u",
+    "-Xlinker",
+    "_kPlatformStrongDill",
   ]
 }
 
@@ -131,6 +140,17 @@ executable("flutter_desktop_darwin_unittests") {
   cflags_objc = flutter_cflags_objc
   cflags_objcc = flutter_cflags_objcc
   ldflags = [ "-ObjC" ]
+  if (flutter_runtime_mode == "debug") {
+    # In debug builds the Dart VM snapshot blobs are resolved at runtime with
+    # dlsym from the current process; without being exported the dynamic
+    # symbol lookup can not find them, and without these anchors the mac
+    # linker may dead strip them, which makes the Dart VM creation of the
+    # test engine fail.
+    public_configs = [
+      "//flutter:export_dynamic_symbols",
+      ":flutter_desktop_darwin_unittests_engine_snapshot",
+    ]
+  }
 
   sources = [
     "framework/Source/FlutterAppDelegateTest.mm",

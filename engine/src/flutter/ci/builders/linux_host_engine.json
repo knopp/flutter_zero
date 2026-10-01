@@ -55,7 +55,8 @@
                     "flutter/build/archives:flutter_patched_sdk",
                     "flutter/build/archives:artifacts",
                     "flutter/tools/font_subset",
-                    "flutter/build/archives:embedder"
+                    "flutter/build/archives:embedder",
+                    "flutter:unittests"
                 ]
             }
         },
@@ -101,7 +102,9 @@
             "ninja": {
                 "config": "ci/host_release",
                 "targets": [
-                    "flutter/build/archives:flutter_patched_sdk"
+                    "flutter/build/archives:flutter_patched_sdk",
+                    "flutter/shell/testing",
+                    "flutter:unittests"
                 ]
             }
         }

@@ -139,16 +139,7 @@ def android_tools():
   """Returns the (emulator, adb, avdmanager) command paths of the Android SDK.
 
   Precedence: ANDROID_SDK_ROOT / ANDROID_HOME, then the platform defaults."""
-  candidates = [
-      os.environ.get('ANDROID_SDK_ROOT'),
-      os.environ.get('ANDROID_HOME'),
-      os.path.join(os.path.expanduser('~'), 'Library', 'Android', 'sdk'),
-      os.path.join(os.path.expanduser('~'), 'Android', 'Sdk'),
-      os.path.join(os.path.expanduser('~'), 'AppData', 'Local', 'Android',
-                   'Sdk'),
-  ]
-  sdk = next((path for path in candidates if path and os.path.isdir(path)),
-             None)
+  sdk = _android_sdk_root()
   if sdk is None:
     die([], 'Android SDK not found; set ANDROID_SDK_ROOT to its location')
   emulator, adb, avdmanager = (
@@ -171,7 +162,6 @@ def android_abi():
 # SDK packages that smoke test needs to boot an emulator on CI, where the
 # runner image does not preinstall them with the Android SDK.
 ANDROID_SDK_IMAGE = 'system-images;android-31;google_apis;%s' % android_abi()
-ANDROID_EMULATOR_PACKAGES = ('emulator', ANDROID_SDK_IMAGE)
 
 
 def _android_sdk_root():
@@ -237,7 +227,7 @@ def boot_android_emulator():
   avd = 'flutter_zero_smoke_test_avd'
   result = subprocess.run(
       [avdmanager, 'create', 'avd', '-n', avd,
-       '-k', 'system-images;android-31;google_apis;%s' % android_abi()],
+       '-k', ANDROID_SDK_IMAGE],
       input='no\n',
       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
       check=False)
@@ -346,7 +336,7 @@ class ToolConsoleOutput:
 
   def __init__(self, process):
     self._process = process
-    self._lines = []
+    self._lines = collections.deque()
     self._tail = collections.deque(maxlen=30)
     self.app_id = None
     self._available = threading.Condition()
@@ -378,16 +368,16 @@ class ToolConsoleOutput:
 
   def expect(self, predicate, timeout):
     """Waits up to timeout seconds for a console line matching predicate."""
-    scanned = len(self._lines)
-    deadline = time.time() + timeout
+    deadline = time.monotonic() + timeout
     while True:
       with self._available:
-        for line in self._lines[scanned:]:
+        while self._lines:
+          line = self._lines.popleft()
           if predicate(line):
             return line
         if self._done:
           break
-        remaining = deadline - time.time()
+        remaining = deadline - time.monotonic()
         if remaining <= 0:
           break
         self._available.wait(min(0.5, remaining))

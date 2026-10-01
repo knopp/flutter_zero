@@ -2017,74 +2017,6 @@ jobs:
           name: artifacts-mac_ios_test_binaries_arm64-${{ steps.engine_content_hash.outputs.value }}
           path: mac_ios_test_binaries_arm64.tar
           retention-days: 1
-  mac_ios_debug_sim_arm64_test:
-    runs-on: macos-latest
-    defaults:
-      run:
-        shell: bash
-    needs:
-      - guard
-    if: ${{ needs.guard.outputs.should_run == 'true' }}
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          path: ''
-      - name: Set up depot_tools
-        if: runner.os != 'Windows'
-        run: |
-          rm -rf "$HOME/depot_tools"
-          for attempt in 1 2 3; do
-            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git "$HOME/depot_tools" && break
-            rm -rf "$HOME/depot_tools"
-            echo "depot_tools clone failed (attempt $attempt), retrying..."
-            sleep 5
-          done
-          test -d "$HOME/depot_tools/.git"
-          # Append depot_tools to the PATH for subsequent steps
-          echo "$HOME/depot_tools" >> $GITHUB_PATH
-      - name: Free disk space
-        if: runner.os == 'Linux' && runner.arch == 'X64'
-        run: curl -fsSL https://raw.githubusercontent.com/apache/arrow/e49d8ae15583ceff03237571569099a6ad62be32/ci/scripts/util_free_space.sh | bash
-      - name: Set up depot_tools
-        if: runner.os == 'Windows'
-        run: |
-          rm -rf "$HOME/depot_tools"
-          for attempt in 1 2 3; do
-            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git "$HOME/depot_tools" && break
-            rm -rf "$HOME/depot_tools"
-            echo "depot_tools clone failed (attempt $attempt), retrying..."
-            sleep 5
-          done
-          test -d "$HOME/depot_tools/.git"
-          # Append depot_tools to the PATH for subsequent steps
-          DEPOT_TOOLS_WIN=$(cygpath -w "$HOME/depot_tools")
-          echo "$DEPOT_TOOLS_WIN" >> $GITHUB_PATH
-      - name: Generate engine content hash
-        id: engine_content_hash
-        run: |
-          engine_content_hash=${{ needs.guard.outputs.engine_content_hash }}
-          echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
-      - name: Copy gclient file
-        run: |
-          cp engine/scripts/slim.gclient .gclient
-      - name: GClient sync
-        run: |
-          gclient sync -D --no-history --shallow --with_branch_heads
-      - name: Build engine
-        run: |
-          cd engine/src
-          ./flutter/bin/et build --config ci/ios_debug_sim_arm64_test
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/ios_debug_sim_arm64_test -type l -lname "/*" -delete || true
-          tar -cvf mac_ios_debug_sim_arm64_test.tar engine/src/out/ci/ios_debug_sim_arm64_test
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-mac_ios_debug_sim_arm64_test-${{ steps.engine_content_hash.outputs.value }}
-          path: mac_ios_debug_sim_arm64_test.tar
-          retention-days: 1
   mac_ios_debug:
     runs-on: macos-latest
     defaults:
@@ -2295,7 +2227,6 @@ jobs:
       - mac_ios_debug_sim
       - mac_ios_debug_sim_arm64
       - mac_ios_test_binaries_arm64
-      - mac_ios_debug_sim_arm64_test
       - mac_ios_debug
       - mac_ios_profile
       - mac_ios_release
@@ -2374,14 +2305,6 @@ jobs:
         run: |
           tar -xvf mac_ios_test_binaries_arm64.tar
           rm mac_ios_test_binaries_arm64.tar
-      - name: Download Artifacts from mac_ios_debug_sim_arm64_test
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts-mac_ios_debug_sim_arm64_test-${{ steps.engine_content_hash.outputs.value }}
-      - name: Extract Artifacts from mac_ios_debug_sim_arm64_test
-        run: |
-          tar -xvf mac_ios_debug_sim_arm64_test.tar
-          rm mac_ios_debug_sim_arm64_test.tar
       - name: Download Artifacts from mac_ios_debug
         uses: actions/download-artifact@v4
         with:
@@ -2548,16 +2471,6 @@ jobs:
           python flutter/testing/run_tests.py \
             --variant ci/host_debug \
             --type engine \
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_debug -type l -lname "/*" -delete || true
-          tar -cvf windows_host_debug.tar engine/src/out/ci/host_debug
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_host_debug-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_host_debug.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_debug/zip_archives/windows-x64/artifacts.zip
         run: |
           cd engine/src/out/ci/host_debug/zip_archives/windows-x64
@@ -2677,16 +2590,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_profile
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_profile -type l -lname "/*" -delete || true
-          tar -cvf windows_host_profile.tar engine/src/out/ci/host_profile
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_host_profile-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_host_profile.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_profile/zip_archives/windows-x64-profile/windows-x64-flutter.zip
         run: |
           cd engine/src/out/ci/host_profile/zip_archives/windows-x64-profile
@@ -2756,16 +2659,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_release
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_release -type l -lname "/*" -delete || true
-          tar -cvf windows_host_release.tar engine/src/out/ci/host_release
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_host_release-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_host_release.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_release/zip_archives/windows-x64-release/windows-x64-flutter.zip
         run: |
           cd engine/src/out/ci/host_release/zip_archives/windows-x64-release
@@ -2835,16 +2728,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_debug_arm64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_debug_arm64 -type l -lname "/*" -delete || true
-          tar -cvf windows_host_debug_arm64.tar engine/src/out/ci/host_debug_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_host_debug_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_host_debug_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_debug_arm64/zip_archives/windows-arm64/artifacts.zip
         run: |
           cd engine/src/out/ci/host_debug_arm64/zip_archives/windows-arm64
@@ -2964,16 +2847,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_profile_arm64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_profile_arm64 -type l -lname "/*" -delete || true
-          tar -cvf windows_host_profile_arm64.tar engine/src/out/ci/host_profile_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_host_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_host_profile_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_profile_arm64/zip_archives/windows-arm64-profile/windows-arm64-flutter.zip
         run: |
           cd engine/src/out/ci/host_profile_arm64/zip_archives/windows-arm64-profile
@@ -3043,16 +2916,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_release_arm64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_release_arm64 -type l -lname "/*" -delete || true
-          tar -cvf windows_host_release_arm64.tar engine/src/out/ci/host_release_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_host_release_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_host_release_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_release_arm64/zip_archives/windows-arm64-release/windows-arm64-flutter.zip
         run: |
           cd engine/src/out/ci/host_release_arm64/zip_archives/windows-arm64-release
@@ -3501,16 +3364,6 @@ jobs:
             --variant ci/host_debug_desktop \
             --type engine \
             --engine-capture-core-dump
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_debug_desktop -type l -lname "/*" -delete || true
-          tar -cvf linux_host_debug_desktop.tar engine/src/out/ci/host_debug_desktop
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux_host_debug_desktop-${{ steps.engine_content_hash.outputs.value }}
-          path: linux_host_debug_desktop.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_debug_desktop/zip_archives/linux-x64-debug/linux-x64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/host_debug_desktop/zip_archives/linux-x64-debug
@@ -3586,16 +3439,6 @@ jobs:
             --variant ci/host_profile_desktop \
             --type engine \
             --engine-capture-core-dump
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_profile_desktop -type l -lname "/*" -delete || true
-          tar -cvf linux_host_profile_desktop.tar engine/src/out/ci/host_profile_desktop
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux_host_profile_desktop-${{ steps.engine_content_hash.outputs.value }}
-          path: linux_host_profile_desktop.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_profile_desktop/zip_archives/linux-x64-profile/linux-x64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/host_profile_desktop/zip_archives/linux-x64-profile
@@ -3671,16 +3514,6 @@ jobs:
             --variant ci/host_release_desktop \
             --type engine \
             --engine-capture-core-dump
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/host_release_desktop -type l -lname "/*" -delete || true
-          tar -cvf linux_host_release_desktop.tar engine/src/out/ci/host_release_desktop
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux_host_release_desktop-${{ steps.engine_content_hash.outputs.value }}
-          path: linux_host_release_desktop.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/host_release_desktop/zip_archives/linux-x64-release/linux-x64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/host_release_desktop/zip_archives/linux-x64-release
@@ -3756,16 +3589,6 @@ jobs:
             --variant ci/linux_profile_arm64 \
             --type engine \
             --engine-capture-core-dump
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/linux_profile_arm64 -type l -lname "/*" -delete || true
-          tar -cvf linux_profile_arm64.tar engine/src/out/ci/linux_profile_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: linux_profile_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/linux_profile_arm64/zip_archives/linux-arm64-profile/linux-arm64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/linux_profile_arm64/zip_archives/linux-arm64-profile
@@ -3841,16 +3664,6 @@ jobs:
             --variant ci/linux_debug_arm64 \
             --type engine \
             --engine-capture-core-dump
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/linux_debug_arm64 -type l -lname "/*" -delete || true
-          tar -cvf linux_debug_arm64.tar engine/src/out/ci/linux_debug_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux_debug_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: linux_debug_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/linux_debug_arm64/zip_archives/linux-arm64/artifacts.zip
         run: |
           cd engine/src/out/ci/linux_debug_arm64/zip_archives/linux-arm64
@@ -3966,16 +3779,6 @@ jobs:
             --variant ci/linux_release_arm64 \
             --type engine \
             --engine-capture-core-dump
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/linux_release_arm64 -type l -lname "/*" -delete || true
-          tar -cvf linux_release_arm64.tar engine/src/out/ci/linux_release_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux_release_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: linux_release_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/linux_release_arm64/zip_archives/linux-arm64-release/linux-arm64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/linux_release_arm64/zip_archives/linux-arm64-release
@@ -4045,16 +3848,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_profile
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_profile -type l -lname "/*" -delete || true
-          tar -cvf windows_android_profile.tar engine/src/out/ci/android_profile
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_android_profile-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_android_profile.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile/zip_archives/android-arm-profile/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_profile/zip_archives/android-arm-profile
@@ -4124,16 +3917,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_profile_arm64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_profile_arm64 -type l -lname "/*" -delete || true
-          tar -cvf windows_android_profile_arm64.tar engine/src/out/ci/android_profile_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_android_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_android_profile_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile
@@ -4203,16 +3986,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_profile_x64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_profile_x64 -type l -lname "/*" -delete || true
-          tar -cvf windows_android_profile_x64.tar engine/src/out/ci/android_profile_x64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_android_profile_x64-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_android_profile_x64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile
@@ -4282,16 +4055,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_release
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_release -type l -lname "/*" -delete || true
-          tar -cvf windows_android_release.tar engine/src/out/ci/android_release
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_android_release-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_android_release.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_release/zip_archives/android-arm-release/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_release/zip_archives/android-arm-release
@@ -4361,16 +4124,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_release_arm64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_release_arm64 -type l -lname "/*" -delete || true
-          tar -cvf windows_android_release_arm64.tar engine/src/out/ci/android_release_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_android_release_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_android_release_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release
@@ -4440,16 +4193,6 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_release_x64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_release_x64 -type l -lname "/*" -delete || true
-          tar -cvf windows_android_release_x64.tar engine/src/out/ci/android_release_x64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows_android_release_x64-${{ steps.engine_content_hash.outputs.value }}
-          path: windows_android_release_x64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_x64/zip_archives/android-x64-release/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_release_x64/zip_archives/android-x64-release
@@ -4518,16 +4261,6 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_profile
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_profile -type l -lname "/*" -delete || true
-          tar -cvf mac_android_profile.tar engine/src/out/ci/android_profile
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-mac_android_profile-${{ steps.engine_content_hash.outputs.value }}
-          path: mac_android_profile.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile/zip_archives/android-arm-profile/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_profile/zip_archives/android-arm-profile
@@ -4596,16 +4329,6 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_profile_arm64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_profile_arm64 -type l -lname "/*" -delete || true
-          tar -cvf mac_android_profile_arm64.tar engine/src/out/ci/android_profile_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-mac_android_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: mac_android_profile_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile
@@ -4674,16 +4397,6 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_profile_x64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_profile_x64 -type l -lname "/*" -delete || true
-          tar -cvf mac_android_profile_x64.tar engine/src/out/ci/android_profile_x64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-mac_android_profile_x64-${{ steps.engine_content_hash.outputs.value }}
-          path: mac_android_profile_x64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile
@@ -4752,16 +4465,6 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_release
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_release -type l -lname "/*" -delete || true
-          tar -cvf mac_android_release.tar engine/src/out/ci/android_release
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-mac_android_release-${{ steps.engine_content_hash.outputs.value }}
-          path: mac_android_release.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_release/zip_archives/android-arm-release/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_release/zip_archives/android-arm-release
@@ -4830,16 +4533,6 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_release_arm64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_release_arm64 -type l -lname "/*" -delete || true
-          tar -cvf mac_android_release_arm64.tar engine/src/out/ci/android_release_arm64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-mac_android_release_arm64-${{ steps.engine_content_hash.outputs.value }}
-          path: mac_android_release_arm64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release
@@ -4908,16 +4601,6 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_release_x64
-      - name: Tar build files
-        run: |
-          find engine/src/out/ci/android_release_x64 -type l -lname "/*" -delete || true
-          tar -cvf mac_android_release_x64.tar engine/src/out/ci/android_release_x64
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-mac_android_release_x64-${{ steps.engine_content_hash.outputs.value }}
-          path: mac_android_release_x64.tar
-          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_x64/zip_archives/android-x64-release/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_release_x64/zip_archives/android-x64-release
@@ -6707,16 +6390,6 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/wasm_release
-      - name: Tar build files
-        run: |
-          find engine/src/out/wasm_release -type l -lname "/*" -delete || true
-          tar -cvf linux_wasm_release.tar engine/src/out/wasm_release
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux_wasm_release-${{ steps.engine_content_hash.outputs.value }}
-          path: linux_wasm_release.tar
-          retention-days: 1
       - name: Tar engine/src/out/wasm_release/zip_archives/flutter-web-sdk.zip
         run: |
           cd engine/src/out/wasm_release/zip_archives
@@ -6733,15 +6406,10 @@ jobs:
       run:
         shell: bash
     needs:
-      - mac_host_debug
       - mac_ios_test_binaries_arm64
       - guard
     if: ${{ needs.guard.outputs.should_run == 'true' }}
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          path: ''
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
@@ -6769,14 +6437,6 @@ jobs:
       - name: GClient sync
         run: |
           gclient sync -D --no-history --shallow --with_branch_heads
-      - name: Download Artifacts from mac_host_debug
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts-mac_host_debug-${{ steps.engine_content_hash.outputs.value }}
-      - name: Extract Artifacts from mac_host_debug
-        run: |
-          tar -xvf mac_host_debug.tar
-          rm mac_host_debug.tar
       - name: Download Artifacts from mac_ios_test_binaries_arm64
         uses: actions/download-artifact@v4
         with:
@@ -6799,15 +6459,10 @@ jobs:
       run:
         shell: bash
     needs:
-      - linux_host_debug
       - linux_android_debug_arm64
       - guard
     if: ${{ needs.guard.outputs.should_run == 'true' }}
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          path: ''
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
@@ -6835,14 +6490,6 @@ jobs:
       - name: GClient sync
         run: |
           gclient sync -D --no-history --shallow --with_branch_heads
-      - name: Download Artifacts from linux_host_debug
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts-linux_host_debug-${{ steps.engine_content_hash.outputs.value }}
-      - name: Extract Artifacts from linux_host_debug
-        run: |
-          tar -xvf linux_host_debug.tar
-          rm linux_host_debug.tar
       - name: Download Artifacts from linux_android_debug_arm64
         uses: actions/download-artifact@v4
         with:

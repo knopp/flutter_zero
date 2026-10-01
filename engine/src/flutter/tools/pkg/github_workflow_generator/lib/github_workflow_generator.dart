@@ -274,9 +274,11 @@ class BuildConfigWriter {
     required BuilderConfig config,
     required YamlWriterSection jobsSections,
     required ArtifactPublisher artifactPublisher,
+    required Set<String> testBuildOutputs,
   }) : _config = config,
        _jobsSections = jobsSections,
-       _artifactPublisher = artifactPublisher;
+       _artifactPublisher = artifactPublisher,
+       _testBuildOutputs = testBuildOutputs;
 
   void write() {
     for (final build in _config.builds) {
@@ -325,8 +327,9 @@ class BuildConfigWriter {
       for (final generator in build.generators) {
         _writeBuildTask(steps, generator);
       }
-      // Always upload the full build output. The artifact test jobs extract
-      // these tars and run tests against them without rebuilding.
+      // Full build outputs are needed only by global packaging or test jobs.
+      if (_config.generators.isNotEmpty || _config.archives.isNotEmpty ||
+          _testBuildOutputs.contains(_nameForBuild(build))) {
       {
         final step = steps.beginMap('name', 'Tar build files');
         final run = step.beginMap('run', '|');
@@ -346,6 +349,7 @@ class BuildConfigWriter {
         w.write('name', 'artifacts-${_nameForBuild(build)}-\${{ steps.engine_content_hash.outputs.value }}');
         w.write('path', '${_nameForBuild(build)}.tar');
         w.write('retention-days', '1');
+      }
       }
       for (final archive in build.archives) {
         for (final assetPath in archive.includePaths) {
@@ -567,6 +571,7 @@ class BuildConfigWriter {
   final BuilderConfig _config;
   final YamlWriterSection _jobsSections;
   final ArtifactPublisher _artifactPublisher;
+  final Set<String> _testBuildOutputs;
 }
 
 /// A single test run inside an artifact test job.
@@ -575,7 +580,6 @@ class _ArtifactTest {
     required this.name,
     required this.variant,
     required this.types,
-    this.dartSdk,
     this.androidVariant,
     this.iosVariant,
   });
@@ -583,10 +587,6 @@ class _ArtifactTest {
   final String name;
   final String variant;
   final String types;
-
-  /// Name of a prebuilt dart SDK directory under `flutter/prebuilts/`, copied
-  /// to `out/<variant>/dart-sdk` so that dart tests can run.
-  final String? dartSdk;
 
   final String? androidVariant;
   final String? iosVariant;
@@ -622,14 +622,12 @@ class _ArtifactTestJob {
   static _ArtifactTest _testFromJson(Map<String, Object?> map) {
     final variant = map['variant']! as String;
     final types = map['types']! as String;
-    final dartSdk = map['dart_sdk'] as String?;
     final androidVariant = map['android_variant'] as String?;
     final iosVariant = map['ios_variant'] as String?;
     return _ArtifactTest(
       name: (map['name'] as String?) ?? 'for $variant',
       variant: variant,
       types: types,
-      dartSdk: dartSdk,
       androidVariant: androidVariant,
       iosVariant: iosVariant,
     );
@@ -696,16 +694,7 @@ void _writeDepotToolsStep(
 /// Emits jobs that run tests against build outputs uploaded by the
 /// artifact-producing build jobs (no rebuilding). The job specs come from the
 /// JSON files passed via `--artifact-tests`.
-void _writeArtifactTestJobs(
-  YamlWriterSection jobsSection,
-  ArtifactPublisher artifactPublisher,
-  List<String> specFiles,
-) {
-  const gclientFileFor = {
-    'slim': 'slim.gclient',
-    'standard': 'standard.gclient',
-    'web': 'web.gclient',
-  };
+List<_ArtifactTestJob> _readArtifactTestJobs(List<String> specFiles) {
   final jobs = <_ArtifactTestJob>[];
   for (final specFile in specFiles) {
     final content = File(specFile).readAsStringSync();
@@ -716,6 +705,19 @@ void _writeArtifactTestJobs(
     }
     jobs.addAll(jobMaps.map(_ArtifactTestJob.fromJson));
   }
+  return jobs;
+}
+
+void _writeArtifactTestJobs(
+  YamlWriterSection jobsSection,
+  ArtifactPublisher artifactPublisher,
+  List<_ArtifactTestJob> jobs,
+) {
+  const gclientFileFor = {
+    'slim': 'slim.gclient',
+    'standard': 'standard.gclient',
+    'web': 'web.gclient',
+  };
   for (final job in jobs) {
     final generated = jobsSection.beginMap(job.name);
     generated.write('runs-on', job.runsOn);
@@ -727,12 +729,6 @@ void _writeArtifactTestJobs(
     needs.writeln('guard');
     generated.write('if', r"${{ needs.guard.outputs.should_run == 'true' }}");
     final steps = generated.beginArray('steps');
-    {
-      final step = steps.beginMap('name', 'Checkout the repository');
-      step.write('uses', 'actions/checkout@v4');
-      final w = step.beginMap('with');
-      w.write('path', "''");
-    }
     {
       final step = steps.beginMap('name', 'Checkout the repository');
       step.write('uses', 'actions/checkout@v4');
@@ -778,12 +774,6 @@ void _writeArtifactTestJobs(
       }
     }
     for (final test in job.tests) {
-      if (test.dartSdk != null) {
-        final step = steps.beginMap('name', 'Copy prebuilt dart sdk');
-        final run = step.beginMap('run', '|');
-        run.writeln('cd engine/src');
-        run.writeln('cp -r flutter/prebuilts/${test.dartSdk}/dart-sdk out/${test.variant}/dart-sdk');
-      }
       final step = steps.beginMap('name', 'Run test ${test.name}');
       final run = step.beginMap('run', '|');
       run.writeln('cd engine/src');
@@ -953,6 +943,8 @@ void main(List<String> arguments) {
 
   final yamlWriter = YamlWriter();
   final artifactTestSpecs = (args['artifact-tests'] as List<String>?) ?? const <String>[];
+  final artifactTestJobs = _readArtifactTestJobs(artifactTestSpecs);
+  final testBuildOutputs = artifactTestJobs.expand((job) => job.downloads).toSet();
   final root = yamlWriter.root;
   root.writeln('# This file is generated through `scripts/update_github_workflow.sh.`');
   root.writeln('# Do not edit directly.');
@@ -982,11 +974,12 @@ void main(List<String> arguments) {
       config: buildConfig,
       jobsSections: jobs,
       artifactPublisher: artifactPublisher,
+      testBuildOutputs: testBuildOutputs,
     );
     writer.write();
   }
 
-  _writeArtifactTestJobs(jobs, artifactPublisher, artifactTestSpecs);
+  _writeArtifactTestJobs(jobs, artifactPublisher, artifactTestJobs);
 
   artifactPublisher.writePublishJob(jobs);
   _writeSmokeTestInvocationJob(jobs);

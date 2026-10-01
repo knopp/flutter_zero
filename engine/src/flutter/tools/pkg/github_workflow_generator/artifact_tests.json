@@ -25,7 +25,6 @@
       "python": "python3",
       "gclient": "slim",
       "downloads": [
-        "mac_host_debug",
         "mac_ios_test_binaries_arm64"
       ],
       "tests": [
@@ -43,7 +42,6 @@
       "python": "python3",
       "gclient": "standard",
       "downloads": [
-        "linux_host_debug",
         "linux_android_debug_arm64"
       ],
       "tests": [

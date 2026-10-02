@@ -1,19 +1,16 @@
 #include "my_application.h"
 
 #include <flutter_linux/flutter_linux.h>
-#ifdef GDK_WINDOWING_X11
-#include <gdk/gdkx.h>
-#endif
 
 #include "flutter/generated_plugin_registrant.h"
 
 struct _MyApplication {
-  GtkApplication parent_instance;
+  GApplication parent_instance;
   char** dart_entrypoint_arguments;
   FlEngine *engine;
 };
 
-G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+G_DEFINE_TYPE(MyApplication, my_application, G_TYPE_APPLICATION)
 
 // Implements GApplication::activate.
 static void my_application_activate(GApplication *application) {
@@ -95,7 +92,7 @@ static void my_application_init(MyApplication* self) {}
 
 MyApplication* my_application_new() {
   // Set the program name to the application ID, which helps various systems
-  // like GTK and desktop environments map this running application to its
+  // like desktop environments map this running application to its
   // corresponding .desktop file. This ensures better integration by allowing
   // the application to be recognized beyond its binary name.
   g_set_prgname(APPLICATION_ID);

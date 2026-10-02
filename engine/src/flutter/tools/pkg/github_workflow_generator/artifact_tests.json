@@ -1,0 +1,57 @@
+{
+  "_comment": [
+    "Defines special test jobs that download the full build output of",
+    "artifact-producing build jobs (no rebuilding) and run the engine",
+    "C++ unit tests against them.",
+    "",
+    "Each job downloads the out/<config> directory tar uploaded by the",
+    "build job named in `downloads` (every build job uploads its build",
+    "output). The tested build's ninja targets must include",
+    "`flutter:unittests` so that the *_unittests binaries are present in",
+    "the build dir; run_tests.py then discovers and runs them (--type",
+    "engine).",
+    "",
+    "For each entry in `tests`, run_tests.py runs with --variant, --type",
+    "and, when present, --android-variant / --ios-variant.",
+    "",
+    "The jobs below run the engine unittests for ci/host_debug on",
+    "linux/windows and for the debug/profile/release arm64 host builds",
+    "on macOS."
+  ],
+  "test_jobs": [
+    {
+      "name": "ios_unit_engine_test",
+      "runs_on": "macos-latest",
+      "python": "python3",
+      "gclient": "slim",
+      "downloads": [
+        "mac_ios_test_binaries_arm64"
+      ],
+      "tests": [
+        {
+          "name": "iOS unit tests for ci/ios_test_binaries_arm64",
+          "variant": "ci/ios_test_binaries_arm64",
+          "ios_variant": "ci/ios_test_binaries_arm64",
+          "types": "objc"
+        }
+      ]
+    },
+    {
+      "name": "android_java_engine_test",
+      "runs_on": "ubuntu-latest",
+      "python": "python3",
+      "gclient": "standard",
+      "downloads": [
+        "linux_android_debug_arm64"
+      ],
+      "tests": [
+        {
+          "name": "Android Java unit tests for ci/android_debug_arm64",
+          "variant": "ci/android_debug_arm64",
+          "android_variant": "ci/android_debug_arm64",
+          "types": "java"
+        }
+      ]
+    }
+  ]
+}

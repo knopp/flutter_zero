@@ -48,7 +48,8 @@
             "ninja": {
                 "config": "ci/host_debug_desktop",
                 "targets": [
-                    "flutter/shell/platform/linux:flutter_gtk"
+                    "flutter/shell/platform/linux:flutter_gtk",
+                    "flutter:unittests"
                 ]
             }
         },
@@ -89,7 +90,8 @@
             "ninja": {
                 "config": "ci/host_profile_desktop",
                 "targets": [
-                    "flutter/shell/platform/linux:flutter_gtk"
+                    "flutter/shell/platform/linux:flutter_gtk",
+                    "flutter:unittests"
                 ]
             }
         },
@@ -130,7 +132,8 @@
             "ninja": {
                 "config": "ci/host_release_desktop",
                 "targets": [
-                    "flutter/shell/platform/linux:flutter_gtk"
+                    "flutter/shell/platform/linux:flutter_gtk",
+                    "flutter:unittests"
                 ]
             }
         }

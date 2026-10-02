@@ -424,9 +424,6 @@ def run_cc_tests(build_dir, executable_filter, coverage, capture_core_dump):
       make_test('common_cpp_core_unittests'),
       make_test('common_cpp_unittests'),
       make_test('dart_plugin_registrant_unittests'),
-      make_test('display_list_rendertests'),
-      make_test('display_list_unittests'),
-      make_test('embedder_a11y_unittests'),
       make_test('embedder_proctable_unittests'),
       make_test('embedder_unittests'),
       make_test('fml_unittests'),
@@ -443,78 +440,37 @@ def run_cc_tests(build_dir, executable_filter, coverage, capture_core_dump):
     unittests += [
         # https://github.com/google/googletest/issues/2490
         make_test('jni_unittests'),
-        make_test('platform_view_android_delegate_unittests'),
         # https://github.com/flutter/flutter/issues/36295
         make_test('shell_unittests'),
     ]
 
   if is_windows():
     unittests += [
-        # The accessibility library only supports Mac and Windows.
-        make_test('accessibility_unittests'),
-        make_test('client_wrapper_windows_unittests'),
-        make_test('flutter_windows_unittests'),
+      make_test('client_wrapper_windows_unittests'),
+      make_test('flutter_windows_unittests'),
     ]
 
   # These unit-tests are Objective-C and can only run on Darwin.
   if is_mac():
     unittests += [
-        # The accessibility library only supports Mac and Windows.
-        make_test('accessibility_unittests'),
-        make_test('availability_version_check_unittests'),
-        make_test('framework_common_swift_unittests'),
-        make_test('framework_common_unittests'),
-        make_test('spring_animation_unittests'),
-        make_test('gpu_surface_metal_unittests'),
+      make_test('availability_version_check_unittests'),
+      make_test('framework_common_swift_unittests'),
+      make_test('framework_common_unittests'),
+      make_test('spring_animation_unittests'),
     ]
 
-  if is_linux():
-    flow_flags = [
-        '--golden-dir=%s' % GOLDEN_DIR,
-        '--font-file=%s' % ROBOTO_FONT_PATH,
-    ]
-    icu_flags = ['--icu-data-file-path=%s' % os.path.join(build_dir, 'icudtl.dat')]
-    unittests += [
-        make_test('flow_unittests', flags=repeat_flags + ['--'] + flow_flags),
-        make_test('flutter_glfw_unittests'),
-        make_test('flutter_linux_unittests', extra_env={'G_DEBUG': 'fatal-criticals'}),
-        # https://github.com/flutter/flutter/issues/36296
-        make_test('txt_unittests', flags=repeat_flags + ['--'] + icu_flags),
-    ]
-  else:
-    flow_flags = ['--gtest_filter=-PerformanceOverlayLayer.Gold']
-    unittests += [
-        make_test('flow_unittests', flags=repeat_flags + flow_flags),
-    ]
-
-  build_name = os.path.basename(build_dir)
-  try:
-    if is_linux():
-      xvfb.start_virtual_x(build_name, build_dir)
-    for test, flags, extra_env in unittests:
-      run_engine_executable(
-          build_dir,
-          test,
-          executable_filter,
-          flags,
-          coverage=coverage,
-          extra_env=extra_env,
-          gtest=True
-      )
-  finally:
-    if is_linux():
-      xvfb.stop_virtual_x(build_name)
-
-  if is_mac():
-    # macOS Desktop unit tests written in Swift.
+  for test, flags, extra_env in unittests:
     run_engine_executable(
         build_dir,
-        'flutter_desktop_darwin_swift_unittests',
+        test,
         executable_filter,
-        shuffle_flags,
-        coverage=coverage
+        flags,
+        coverage=coverage,
+        extra_env=extra_env,
+        gtest=True
     )
 
+  if is_mac():
     # flutter_desktop_darwin_unittests uses global state that isn't handled
     # correctly by gtest-parallel.
     # https://github.com/flutter/flutter/issues/104789
@@ -528,64 +484,12 @@ def run_cc_tests(build_dir, executable_filter, coverage, capture_core_dump):
           shuffle_flags,
           coverage=coverage
       )
+
     extra_env = metal_validation_env()
     extra_env.update(vulkan_validation_env(build_dir))
-    mac_impeller_unittests_flags = repeat_flags + [
-        '--gtest_filter=-*OpenGLES',  # These are covered in the golden tests.
-        '--',
-        '--enable_vulkan_validation',
-    ]
-    # Impeller tests are only supported on macOS for now.
-    run_engine_executable(
-        build_dir,
-        'impeller_unittests',
-        executable_filter,
-        mac_impeller_unittests_flags,
-        coverage=coverage,
-        extra_env=extra_env,
-        gtest=True,
-        # TODO(https://github.com/flutter/flutter/issues/123733): Remove this allowlist.
-        # See also https://github.com/flutter/flutter/issues/114872.
-        allowed_failure_output=[
-            '[MTLCompiler createVertexStageAndLinkPipelineWithFragment:',
-            '[MTLCompiler pipelineStateWithVariant:',
-        ]
-    )
-
-    # Run one interactive Vulkan test with validation enabled.
-    #
-    # TODO(matanlurey): https://github.com/flutter/flutter/issues/134852; enable
-    # more of the suite, and ideally we'd like to use Skia gold and take screen
-    # shots as well.
-    run_engine_executable(
-        build_dir,
-        'impeller_unittests',
-        executable_filter,
-        shuffle_flags + [
-            '--enable_vulkan_validation',
-            '--enable_playground',
-            '--playground_timeout_ms=4000',
-            '--gtest_filter="*ColorWheel*"',
-        ],
-        coverage=coverage,
-        extra_env=extra_env,
-    )
-
-    # Run the Flutter GPU test suite.
-    run_engine_executable(
-        build_dir,
-        'impeller_dart_unittests',
-        executable_filter,
-        shuffle_flags + [
-            '--enable_vulkan_validation',
-            # TODO(https://github.com/flutter/flutter/issues/145036)
-            # TODO(https://github.com/flutter/flutter/issues/142642)
-            '--gtest_filter=*Metal',
-        ],
-        coverage=coverage,
-        extra_env=extra_env,
-    )
-
+    del extra_env
+    # Impeller, and with it the interactive Metal/Vulkan tests, were removed
+    # from flutter_zero.
 
 def run_engine_benchmarks(build_dir, executable_filter):
   logger.info('Running Engine Benchmarks.')
@@ -598,12 +502,7 @@ def run_engine_benchmarks(build_dir, executable_filter):
 
   run_engine_executable(build_dir, 'ui_benchmarks', executable_filter, icu_flags)
 
-  run_engine_executable(build_dir, 'display_list_builder_benchmarks', executable_filter, icu_flags)
-
   run_engine_executable(build_dir, 'geometry_benchmarks', executable_filter, icu_flags)
-
-  if is_linux():
-    run_engine_executable(build_dir, 'txt_benchmarks', executable_filter, icu_flags)
 
 
 class FlutterTesterOptions():
@@ -752,7 +651,15 @@ def run_java_tests(executable_filter, android_variant='android_debug_unopt'):
       '--gradle-user-home=%s' % gradle_cache_dir,
   ]
 
-  env = dict(os.environ, ANDROID_HOME=android_home, JAVA_HOME=java_home())
+  # Gradle fails if ANDROID_HOME and ANDROID_SDK_ROOT resolve to different
+  # SDK locations (CI images export ANDROID_SDK_ROOT to their own SDK), so
+  # both are pinned to the engine-provided SDK.
+  env = dict(
+    os.environ,
+    ANDROID_HOME=android_home,
+    ANDROID_SDK_ROOT=android_home,
+    JAVA_HOME=java_home(),
+  )
   run_cmd(command, cwd=test_runner_dir, env=env)
 
 

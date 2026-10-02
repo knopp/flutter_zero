@@ -1,0 +1,173 @@
+# Smoke test for the deployed engine artifacts.
+#
+# Runs the sample project in this checkout with the flutter tool consuming the
+# published engine artifacts as storage (as a user would), through
+# FLUTTER_STORAGE_BASE_URL. It consumes the same relative layout
+# (flutter_infra_release/flutter/<engine hash>/...) from either the CI-only
+# artifacts bucket (deployed by the build-and-upload workflow for pull
+# requests under a per-run prefix) or the production bucket.
+#
+# This workflow is on-call only: it is invoked
+#   * by the build-and-upload workflow, which passes the run id of its
+#     publishing run, or
+#   * by the call-smoke-test workflow, which selects already-published
+#     production artifacts.
+# NOTE: this file is intentionally not generated; edit directly.
+
+name: Smoke Test
+
+# Quoted so that YAML 1.1 parsers do not coerce the key to a boolean.
+'on':
+  workflow_call:
+    inputs:
+      run_id:
+        description: 'The run id of the build-and-upload run that published the artifacts; consumed as pr-<run_id> in the CI bucket. Empty selects the production bucket.'
+        type: string
+        default: ''
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: Resolve the artifacts location
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      engine_content_hash: ${{ steps.engine_content_hash.outputs.value }}
+      storage_base_url: ${{ steps.storage.outputs.base_url }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Generate engine content hash
+        id: engine_content_hash
+        run: |
+          engine_content_hash=$(bin/internal/content_aware_hash.sh)
+          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
+
+      - name: Select the artifacts storage
+        id: storage
+        env:
+          HASH: ${{ steps.engine_content_hash.outputs.value }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          for BASE in $(if [ -n "$RUN_ID" ]; then
+            echo "https://ci.flutter0.dev/pr-${RUN_ID}"
+          fi) "https://engine.flutter0.dev"; do
+            URL="$BASE/flutter_infra_release/flutter/$HASH/engine_stamp.json"
+            if curl --head --silent --fail "$URL" > /dev/null; then
+              echo "::notice:: Consuming artifacts from $BASE"
+              echo "base_url=$BASE" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+          echo "::error::No deployed artifacts for engine hash $HASH (checked the CI prefix pr-${RUN_ID} and the engine bucket); cannot smoke test."
+          exit 1
+
+  smoke:
+    name: Smoke (${{ matrix.device }} ${{ matrix.mode }})
+    needs: [resolve]
+    runs-on: ${{ matrix.runs_on }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { device: macos,   mode: debug,   runs_on: macos-latest,   python: python3 }
+          - { device: macos,   mode: profile, runs_on: macos-latest,   python: python3 }
+          - { device: macos,   mode: release, runs_on: macos-latest,   python: python3 }
+          - { device: windows, mode: debug,   runs_on: windows-latest, python: python  }
+          - { device: windows, mode: profile, runs_on: windows-latest, python: python  }
+          - { device: windows, mode: release, runs_on: windows-latest, python: python  }
+          - { device: linux,   mode: debug,   runs_on: ubuntu-latest,  python: python3 }
+          - { device: linux,   mode: profile, runs_on: ubuntu-latest,  python: python3 }
+          - { device: linux,   mode: release, runs_on: ubuntu-latest,  python: python3 }
+          # The iOS simulator is created and booted from scratch by the
+          # harness; the Android emulator image is installed and booted by
+          # the harness.
+          - { device: ios,     mode: debug,   runs_on: macos-latest,   python: python3 }
+          - { device: android, mode: debug,   runs_on: ubuntu-latest,  python: python3 }
+          - { device: android, mode: profile, runs_on: ubuntu-latest,  python: python3 }
+          - { device: android, mode: release, runs_on: ubuntu-latest,  python: python3 }
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        # Full history + tags so that the tool can determine its version
+        # from git (see version.dart: GitTagVersion.determine).
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Pin the framework version
+        # The tool derives its framework version from git tags, but the CI
+        # checkouts of this fork contain none, so the tool would report the
+        # '0.0.0-unknown' placeholder (see kUnknownFrameworkVersion in
+        # version.dart); `pub get` then fails because the sample project
+        # requires Flutter >= 1.17.0. Hardcode a valid version for the smoke
+        # test before the tool snapshot is compiled (a fresh checkout builds
+        # it from the patched source). The intended constant is asserted to
+        # catch upstream drift.
+        run: |
+          FILE=packages/flutter_tools/lib/src/version.dart
+          sed "s|const kUnknownFrameworkVersion = '0.0.0-unknown';|const kUnknownFrameworkVersion = '3.48.0-0.0.pre';|" \
+            "$FILE" > "$FILE.new"
+          mv "$FILE.new" "$FILE"
+          grep -q "const kUnknownFrameworkVersion = '3.48.0-0.0.pre';" "$FILE"
+
+      - name: Install Linux desktop build prerequisites
+        # Building the sample app for the linux device runs the template's
+        # CMake, which pkg-config's glib-2.0; the hosted Ubuntu image does not
+        # include the glib development package.
+        if: matrix.device == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglib2.0-dev liblzma-dev
+
+      - name: Enable KVM group perms
+        # The hosted Ubuntu runners expose /dev/kvm, but with default
+        # permissions (root:kvm, mode 0660) the runner user cannot open it;
+        # without this rule the emulator crashes or silently falls back to
+        # software emulation and the boot never completes inside the timeout.
+        # https://github.blog/2024-04-02-github-actions-hardware-accelerated-android-virtualization-now-available/
+        if: matrix.device == 'android'
+        run: |
+          test -e /dev/kvm
+          # chmod synchronously; udevadm applies rules to the live device only
+          # asynchronously, so relying on just the trigger is racy.
+          sudo chmod 666 /dev/kvm
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          test -w /dev/kvm
+
+      - name: Pin the Android AVD home
+        # On the ubuntu-24.04 runner image avdmanager writes AVDs into
+        # ~/.config/.android/avd (XDG_CONFIG_HOME is set), while the emulator
+        # looks in ~/.android/avd and dies immediately ("no avd found").
+        # Pinning the documented variables makes both tools agree.
+        # https://github.com/actions/runner-images/issues/11482
+        if: matrix.device == 'android'
+        run: |
+          echo "ANDROID_USER_HOME=$HOME/.android" >> "$GITHUB_ENV"
+          echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
+          echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
+          mkdir -p "$HOME/.android/avd"
+
+      - name: Run smoke test (${{ matrix.device }} ${{ matrix.mode }})
+        env:
+          FLUTTER_STORAGE_BASE_URL: ${{ needs.resolve.outputs.storage_base_url }}
+          # update_engine_version.sh otherwise recomputes the engine version
+          # from the master base tree (content_aware_hash.sh's merge-base
+          # logic), which does not match the deployed artifact directory of
+          # this pull request; the deployment is keyed by the hash captured at
+          # build time, so it is passed through here instead.
+          FLUTTER_PREBUILT_ENGINE_VERSION: ${{ needs.resolve.outputs.engine_content_hash }}
+        run: |
+          ${{ matrix.python }} dev/smoke_test/run.py \
+            --device ${{ matrix.device }} \
+            --mode ${{ matrix.mode }}

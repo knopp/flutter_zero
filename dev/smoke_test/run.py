@@ -313,112 +313,139 @@ def launch_flutter_run(project_dir, device, engine, host_engine, mode='debug'):
 
 
 def stop_tool(process):
+  # Best effort: this runs from a `finally` block, so a hard failure here
+  # would mask the run's own exit status.
   if process.poll() is None:
     try:
       send_daemon_command(process, 0, 'app.stop', None)
       process.wait(timeout=QUIT_GRACE_S)
-    except (subprocess.TimeoutExpired, OSError):
+      return
+    except Exception as e:
+      log('stopping the tool failed; terminating (%s)' % e)
+    try:
       process.terminate()
+    except Exception as e:
+      log('terminating the tool failed (%s)' % e)
 
 
-class ToolConsoleOutput:
-  """Watches the console of a flutter tool that is running the sample app.
+class ToolConsole:
+  """Watches the flutter tool's console while it runs the sample app.
 
-  The tool's stdout is consumed continuously (so the tool cannot deadlock
-  on a full pipe), every line is echoed to the harness log, and
-  daemon-protocol lines are scanned for the app.start event to learn the
-  running app's id, which callers need for app.restart/app.stop commands.
+  One reader thread digests the tool's merged stdout continuously, so the
+  tool can never block on a full pipe: lines are reconstructed from raw
+  chunks, echoed to the harness log, and daemon-protocol frames are parsed:
 
-  expect() waits until a console line matching the predicate shows up and
-  returns it; on timeout (or when the tool exits first) it fails the run
-  with a tail of the recent console lines.
+    app.start   -> records the running app's id (app_id), which
+                   app.restart/app.stop commands address
+    app.started -> the device/service protocol is initialized; the tool
+                   rejects app.restart requests before this point with
+                   "Device initialization has not completed." (observed on
+                   the iOS simulator, whose service connection completes a
+                   few seconds after the app's first print)
+
+  wait_for() and wait_started() block until their moment and fail the run
+  with the recent console output when they time out (or when the tool
+  exits first).
   """
 
   def __init__(self, process):
-    self._process = process
-    self._lines = collections.deque()
-    self._tail = collections.deque(maxlen=30)
+    self.process = process
     self.app_id = None
-    self._available = threading.Condition()
-    self._done = False
-    self._reader = threading.Thread(target=self._pump, daemon=True)
+    self._started = False
+    self._lines = []
+    self._tail = collections.deque(maxlen=12)
+    self._lock = threading.Condition()
+    self._eof = False
+    self._reader = threading.Thread(target=self._read_process, daemon=True)
     self._reader.start()
 
-  def _pump(self):
-    for line in self._process.stdout:
-      text = line.rstrip('\r\n')
-      log('run:%s' % text)
-      try:
-        payload = json.loads(text)  # daemon lines are single-element arrays
-        message = payload[0] if isinstance(payload, list) else payload
-      except ValueError:
-        message = None
-      if isinstance(message, dict) and message.get('event') == 'app.start':
-        app_id = (message.get('params') or {}).get('appId')
-        if app_id:
-          with self._available:
-            self.app_id = app_id
-      with self._available:
-        self._tail.append(text)
-        self._lines.append(text)
-        self._available.notify_all()
-    with self._available:
-      self._done = True
-      self._available.notify_all()
+  def _read_process(self):
+    for raw in self.process.stdout:
+      line = raw.rstrip('\r\n')
+      log('run:%s' % line)
+      self._note_daemon(line)
+      with self._lock:
+        self._lines.append(line)
+        self._tail.append(line)
+        self._lock.notify_all()
+    with self._lock:
+      self._eof = True
+      self._lock.notify_all()
 
-  def expect(self, predicate, timeout):
-    """Waits up to timeout seconds for a console line matching predicate."""
+  def _note_daemon(self, line):
+    """Interprets one daemon-protocol line; every other line is noise."""
+    try:
+      payload = json.loads(line)  # daemon frames are single-element arrays
+      frame = payload[0] if isinstance(payload, list) else payload
+    except ValueError:
+      return
+    if not isinstance(frame, dict) or 'event' not in frame:
+      return
+    if frame['event'] == 'app.start':
+      app_id = (frame.get('params') or {}).get('appId')
+      if app_id:
+        self.app_id = app_id
+    elif frame['event'] == 'app.started':
+      self._started = True
+
+  def _wait(self, predicate, timeout, failure):
+    """Returns the first console line matching predicate, or fails the run."""
     deadline = time.monotonic() + timeout
     while True:
-      with self._available:
-        while self._lines:
-          line = self._lines.popleft()
-          if predicate(line):
-            return line
-        if self._done:
-          break
+      with self._lock:
+        match = next((line for line in self._lines if predicate(line)), None)
+        if match is not None:
+          return match
         remaining = deadline - time.monotonic()
-        if remaining <= 0:
+        if remaining <= 0 or self._eof:
           break
-        self._available.wait(min(0.5, remaining))
-    die(list(self._tail)[-12:],
-        'expected app console line did not appear within %ss' % timeout)
+        self._lock.wait(min(0.5, remaining))
+    die(list(self._tail), failure)
+
+  def wait_for(self, sentinel, timeout):
+    """Waits for the app to print a console line containing sentinel."""
+    _FAILED = 'the app did not print %s within %.0fs' % (sentinel, timeout)
+    return self._wait(lambda line: sentinel in line, timeout, _FAILED)
+
+  def wait_started(self, timeout):
+    """Waits for the daemon's app.started event (the restart gate)."""
+    self._wait(lambda _: self._started, timeout,
+               'the daemon did not report app.started within %.0fs' % timeout)
 
 
 def run_debug_flow(project_dir, device, engine, host_engine):
   """Launch, hot reload (with modified source), hot restart, quit."""
-  process = launch_flutter_run(project_dir, device, engine, host_engine)
-  output = ToolConsoleOutput(process)
+  console = ToolConsole(launch_flutter_run(project_dir, device, engine,
+                                           host_engine))
   command_index = 1
   try:
-    output.expect(lambda line: 'SMOKE:boot:A:' in line, DEVICE_BOOT_TIMEOUT_S)
+    console.wait_for('SMOKE:boot:A:', DEVICE_BOOT_TIMEOUT_S)
     log('launch ok')
-    time.sleep(3.0)
-    log('modifying lib/main.dart (A -> B)')
+    log('waiting for app.started')
+    console.wait_started(DEVICE_BOOT_TIMEOUT_S)
+    log('app started; modifying lib/main.dart (A -> B)')
     write_app_file(project_dir, 'B')
     log('requesting hot reload')
-    send_daemon_command(process, command_index, 'app.restart',
-                        output.app_id, full_restart=False)
+    send_daemon_command(console.process, command_index, 'app.restart',
+                        console.app_id, full_restart=False)
     command_index += 1
-    line = output.expect(
-        lambda line: 'SMOKE:tick:B:' in line, RELOAD_TIMEOUT_S)
+    line = console.wait_for('SMOKE:tick:B:', RELOAD_TIMEOUT_S)
     log('hot reload ok (%s)' % line.strip())
     log('requesting hot restart')
-    send_daemon_command(process, command_index, 'app.restart',
-                        output.app_id, full_restart=True)
+    send_daemon_command(console.process, command_index, 'app.restart',
+                        console.app_id, full_restart=True)
     command_index += 1
     if device != 'web':
       # The web engine's hot restart hooks are dummies (no invocation), so the
       # pre-restart listener sentinel is only asserted on native devices.
-      output.expect(
-          lambda line: 'SMOKE:pre-restart:' in line, RELOAD_TIMEOUT_S)
-    output.expect(
-        lambda line: 'SMOKE:boot:B:0' in line, RELOAD_TIMEOUT_S)
+      console.wait_for('SMOKE:pre-restart:', RELOAD_TIMEOUT_S)
+    console.wait_for('SMOKE:boot:B:0', RELOAD_TIMEOUT_S)
     log('hot restart ok')
-    send_daemon_command(process, command_index, 'app.stop', output.app_id)
-    process.wait(timeout=QUIT_GRACE_S)
+    send_daemon_command(console.process, command_index, 'app.stop',
+                        console.app_id)
+    console.process.wait(timeout=QUIT_GRACE_S)
   finally:
-    stop_tool(process)
+    stop_tool(console.process)
 
 
 def run_tool_sync(args, cwd=None):
@@ -464,16 +491,16 @@ def run_boot_only_flow(project_dir, device, engine, host_engine, mode):
       die([], 'web %s build is missing artifacts: %s' % (mode, ', '.join(missing)))
     log('build ok (%s)' % mode)
     return
-  process = launch_flutter_run(project_dir, device, engine, host_engine, mode)
-  output = ToolConsoleOutput(process)
+  console = ToolConsole(launch_flutter_run(project_dir, device, engine,
+                                           host_engine, mode))
   try:
-    output.expect(lambda line: 'SMOKE:boot:A:' in line, DEVICE_BOOT_TIMEOUT_S)
+    console.wait_for('SMOKE:boot:A:', DEVICE_BOOT_TIMEOUT_S)
     log('launch ok (%s)' % mode)
     time.sleep(3.0)
-    send_daemon_command(process, 0, 'app.stop', output.app_id)
-    process.wait(timeout=QUIT_GRACE_S)
+    send_daemon_command(console.process, 0, 'app.stop', console.app_id)
+    console.process.wait(timeout=QUIT_GRACE_S)
   finally:
-    stop_tool(process)
+    stop_tool(console.process)
 
 
 def main():

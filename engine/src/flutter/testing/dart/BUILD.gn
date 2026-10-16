@@ -27,6 +27,7 @@ tests = [
 foreach(test, tests) {
   flutter_build_dir = rebase_path("$root_gen_dir")
   flutter_src_dir = rebase_path("//flutter")
+
   flutter_frontend_server("compile_$test") {
     main_dart = test
     kernel_output = "$root_gen_dir/$test.dill"

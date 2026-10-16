@@ -15,8 +15,8 @@ import io.flutter.embedding.engine.FlutterEngine;
  *
  * <p>{@link io.flutter.embedding.engine.FlutterEngine} instances require significant time to warm
  * up. Therefore, a developer might choose to hold onto an existing {@link
- * io.flutter.embedding.engine.FlutterEngine}. This interface facilitates providing a cached, pre-warmed {@link
- * io.flutter.embedding.engine.FlutterEngine}.
+ * io.flutter.embedding.engine.FlutterEngine}. This interface facilitates providing a cached,
+ * pre-warmed {@link io.flutter.embedding.engine.FlutterEngine}.
  */
 public interface FlutterEngineProvider {
   /**

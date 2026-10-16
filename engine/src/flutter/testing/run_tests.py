@@ -446,17 +446,17 @@ def run_cc_tests(build_dir, executable_filter, coverage, capture_core_dump):
 
   if is_windows():
     unittests += [
-      make_test('client_wrapper_windows_unittests'),
-      make_test('flutter_windows_unittests'),
+        make_test('client_wrapper_windows_unittests'),
+        make_test('flutter_windows_unittests'),
     ]
 
   # These unit-tests are Objective-C and can only run on Darwin.
   if is_mac():
     unittests += [
-      make_test('availability_version_check_unittests'),
-      make_test('framework_common_swift_unittests'),
-      make_test('framework_common_unittests'),
-      make_test('spring_animation_unittests'),
+        make_test('availability_version_check_unittests'),
+        make_test('framework_common_swift_unittests'),
+        make_test('framework_common_unittests'),
+        make_test('spring_animation_unittests'),
     ]
 
   for test, flags, extra_env in unittests:
@@ -490,6 +490,7 @@ def run_cc_tests(build_dir, executable_filter, coverage, capture_core_dump):
     del extra_env
     # Impeller, and with it the interactive Metal/Vulkan tests, were removed
     # from flutter_zero.
+
 
 def run_engine_benchmarks(build_dir, executable_filter):
   logger.info('Running Engine Benchmarks.')
@@ -655,10 +656,10 @@ def run_java_tests(executable_filter, android_variant='android_debug_unopt'):
   # SDK locations (CI images export ANDROID_SDK_ROOT to their own SDK), so
   # both are pinned to the engine-provided SDK.
   env = dict(
-    os.environ,
-    ANDROID_HOME=android_home,
-    ANDROID_SDK_ROOT=android_home,
-    JAVA_HOME=java_home(),
+      os.environ,
+      ANDROID_HOME=android_home,
+      ANDROID_SDK_ROOT=android_home,
+      JAVA_HOME=java_home(),
   )
   run_cmd(command, cwd=test_runner_dir, env=env)
 

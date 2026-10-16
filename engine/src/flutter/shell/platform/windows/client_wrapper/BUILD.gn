@@ -12,9 +12,7 @@ _wrapper_includes = [
   "include/flutter/plugin_registrar_windows.h",
 ]
 
-_wrapper_sources = [
-  "flutter_engine.cc",
-]
+_wrapper_sources = [ "flutter_engine.cc" ]
 
 # This code will be merged into .../common/client_wrapper for client use,
 # so uses header paths that assume the merged state. Include the header
@@ -87,8 +85,8 @@ executable("client_wrapper_windows_unittests") {
     "//flutter/shell/platform/common/client_wrapper:client_wrapper_library_stubs",
     "//flutter/testing",
 
-    # TODO(chunhtai): Consider refactoring flutter_root/testing so that there's a testing
-    # target that doesn't require a Dart runtime to be linked in.
+    # TODO(chunhtai): Consider refactoring flutter_root/testing so that there's
+    # a testing target that doesn't require a Dart runtime to be linked in.
     # https://github.com/flutter/flutter/issues/41414.
     "$dart_src/runtime:libdart_jit",
   ]
@@ -102,9 +100,7 @@ client_wrapper_file_archive_list = [
   "standard_codec.cc",
 ]
 
-win_client_wrapper_file_archive_list = [
-  "flutter_engine.cc",
-]
+win_client_wrapper_file_archive_list = [ "flutter_engine.cc" ]
 
 zip_bundle("client_wrapper_archive") {
   output = "$full_target_platform_name/flutter-cpp-client-wrapper.zip"

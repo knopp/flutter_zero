@@ -164,7 +164,7 @@ TEST_F(FlutterWindowsEngineTest, RunDoesExpectedInitialization) {
   modifier.embedder_api().Run = MOCK_ENGINE_PROC(
       Run, ([&run_called, engine_instance = engine.get()](
                 size_t version, const FlutterProjectArgs* args, void* user_data,
-                FLUTTER_API_SYMBOL(FlutterEngine) * engine_out) {
+                FLUTTER_API_SYMBOL(FlutterEngine)* engine_out) {
         run_called = true;
         *engine_out = reinterpret_cast<FLUTTER_API_SYMBOL(FlutterEngine)>(1);
 

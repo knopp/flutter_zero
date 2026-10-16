@@ -15,7 +15,6 @@
 #include "flutter/shell/platform/windows/public/flutter_windows.h"
 #include "flutter/shell/platform/windows/testing/windows_test_context.h"
 
-
 namespace flutter {
 namespace testing {
 

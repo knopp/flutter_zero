@@ -111,7 +111,6 @@ test_fixtures("flutter_desktop_darwin_fixtures") {
   fixtures = [ "//flutter/third_party/icu/common/icudtl.dat" ]
 }
 
-
 # Keeps the Dart VM snapshot blobs of the engine inside the test executable.
 #
 # The blobs are resolved at runtime with dlsym from the current process, and

@@ -17,9 +17,8 @@ import java.util.Map;
  * <p>The ID of a given {@link io.flutter.embedding.engine.FlutterEngineGroup} can be whatever
  * {@code String} is desired.
  *
- * Use the {@code FlutterEngineGroupCache} singleton
- * internally when instructed to use a cached {@link io.flutter.embedding.engine.FlutterEngineGroup}
- * based on a given ID.
+ * <p>Use the {@code FlutterEngineGroupCache} singleton internally when instructed to use a cached
+ * {@link io.flutter.embedding.engine.FlutterEngineGroup} based on a given ID.
  */
 public class FlutterEngineGroupCache {
   private static volatile FlutterEngineGroupCache instance;

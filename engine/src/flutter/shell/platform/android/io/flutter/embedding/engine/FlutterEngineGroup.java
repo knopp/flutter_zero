@@ -95,10 +95,8 @@ public class FlutterEngineGroup {
    * engine created will recreate its dependencies.
    */
   public FlutterEngine createAndRunEngine(
-      @NonNull Context context,
-      @Nullable DartEntrypoint dartEntrypoint) {
-    return createAndRunEngine(
-        new Options(context).setDartEntrypoint(dartEntrypoint));
+      @NonNull Context context, @Nullable DartEntrypoint dartEntrypoint) {
+    return createAndRunEngine(new Options(context).setDartEntrypoint(dartEntrypoint));
   }
 
   /**
@@ -129,11 +127,7 @@ public class FlutterEngineGroup {
     }
 
     if (activeEngines.size() == 0) {
-      engine =
-          createEngine(
-              context,
-              automaticallyRegisterPlugins,
-              waitForRestorationData);
+      engine = createEngine(context, automaticallyRegisterPlugins, waitForRestorationData);
       engine.getDartExecutor().executeDartEntrypoint(dartEntrypoint, dartEntrypointArgs);
     } else {
       engine =
@@ -168,9 +162,7 @@ public class FlutterEngineGroup {
 
   @VisibleForTesting
   /* package */ FlutterEngine createEngine(
-      Context context,
-      boolean automaticallyRegisterPlugins,
-      boolean waitForRestorationData) {
+      Context context, boolean automaticallyRegisterPlugins, boolean waitForRestorationData) {
     return new FlutterEngine(
         context, // Context.
         null, // FlutterLoader.

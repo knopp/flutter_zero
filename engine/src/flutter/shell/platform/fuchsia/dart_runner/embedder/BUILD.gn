@@ -27,10 +27,12 @@ template("create_aot_snapshot") {
   if (invoker.product) {
     product_suffix = "_product"
   }
+
   compiled_action("${target_name}_assembly") {
     snapshot_assembly = "$target_gen_dir/aot${product_suffix}_vm_snapshot.S"
 
-    # gen_snapshot only needs this to go through the motions of setting up an isolate.
+    # gen_snapshot only needs this to go through the motions of setting up an
+    # isolate.
     shim_target = ":shim${product_suffix}_kernel($host_toolchain)"
     shim_kernel = get_label_info(shim_target, "target_gen_dir") +
                   "/shim${product_suffix}_kernel.dill"

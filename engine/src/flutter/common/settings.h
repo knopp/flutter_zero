@@ -289,7 +289,6 @@ struct Settings {
   // Max bytes threshold of resource cache, or 0 for unlimited.
   size_t resource_cache_max_bytes_threshold = 0;
 
-
   enum class MergedPlatformUIThread {
     // Use separate threads for the UI and platform task runners.
     kDisabled,

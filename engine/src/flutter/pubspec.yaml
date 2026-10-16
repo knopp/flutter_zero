@@ -76,7 +76,7 @@ name: _engine_workspace
 
 # Required for workspace support.
 environment:
-  sdk: ^3.9.0-0
+  sdk: ^3.13.0-0
 
 # Declare all packages that are part of the workspace.
 workspace:
@@ -93,7 +93,6 @@ workspace:
   - tools/build_bucket_golden_scraper
   - tools/clang_tidy
   - tools/clangd_check
-  - tools/const_finder
   - tools/engine_tool
   - tools/header_guard_check
   - tools/gen_web_locale_keymap
@@ -174,6 +173,8 @@ dependency_overrides:
     path: ./third_party/dart/third_party/pkg/tools/pkgs/boolean_selector
   cli_config:
     path: ./third_party/dart/third_party/pkg/tools/pkgs/cli_config
+  cli_util:
+    path: ./third_party/dart/third_party/pkg/tools/pkgs/cli_util
   collection:
     path: ./third_party/dart/third_party/pkg/core/pkgs/collection
   convert:

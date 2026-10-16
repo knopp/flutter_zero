@@ -503,7 +503,7 @@ FlutterEngineResult FlutterEngineInitialize(size_t version,
           compute_platform_resolved_locale_callback,  //
           on_pre_engine_restart_callback,             //
           channel_update_callback,                    //
-      };
+  };
 
   auto on_create_platform_view =
       InferPlatformViewCreationCallback(user_data, platform_dispatch_table);

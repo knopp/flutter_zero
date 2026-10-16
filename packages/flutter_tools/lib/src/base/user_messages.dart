@@ -161,8 +161,8 @@ class UserMessages {
   String pkgConfigTooOld(String minimumVersion) =>
       'pkg-config $minimumVersion or later is required.';
   String get gtkLibrariesMissing =>
-      'GTK 3.0 development libraries are required for Linux development.\n'
-      'They are likely available from your distribution (e.g.: apt install libgtk-3-dev)';
+      'GLib development libraries are required for Linux development.\n'
+      'They are likely available from your distribution (e.g.: apt install libglib2.0-dev)';
   String get eglinfoMissing =>
       "Unable to access driver information using 'eglinfo'.\n"
       'It is likely available from your distribution (e.g.: apt install mesa-utils)';

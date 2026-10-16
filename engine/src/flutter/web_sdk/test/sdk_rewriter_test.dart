@@ -153,9 +153,7 @@ void printSomething() {
 
   test('gets correct extra imports', () {
     // Root libraries.
-    expect(getExtraImportsForLibrary('engine'), <String>[
-      "import 'dart:ui_web' as ui_web;",
-    ]);
+    expect(getExtraImportsForLibrary('engine'), <String>["import 'dart:ui_web' as ui_web;"]);
     expect(getExtraImportsForLibrary('skwasm_stub'), <String>[
       "import 'dart:ui_web' as ui_web;",
       "import 'dart:_engine';",

@@ -59,15 +59,12 @@ source_set("flutter_windows_source") {
     "imm32.lib",
   ]
 
-  configs += [
-    "//flutter/shell/platform/common:desktop_library_implementation",
-  ]
+  configs +=
+      [ "//flutter/shell/platform/common:desktop_library_implementation" ]
 
   defines = [ "FLUTTER_ENGINE_NO_PROTOTYPES" ]
 
-  public_deps = [
-    "//flutter/fml:string_conversion",
-  ]
+  public_deps = [ "//flutter/fml:string_conversion" ]
 
   deps = [
     ":flutter_windows_headers",

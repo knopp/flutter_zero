@@ -6,8 +6,11 @@ part of ui;
 
 typedef VoidCallback = void Function();
 typedef PlatformMessageResponseCallback = void Function(ByteData? data);
-typedef PlatformMessageCallback =
-    void Function(String name, ByteData? data, PlatformMessageResponseCallback? callback);
+typedef PlatformMessageCallback = void Function(
+  String name,
+  ByteData? data,
+  PlatformMessageResponseCallback? callback,
+);
 typedef ErrorCallback = bool Function(Object exception, StackTrace stackTrace);
 
 /// A token that represents a root isolate.
@@ -18,6 +21,15 @@ class RootIsolateToken {
 }
 
 abstract class PlatformDispatcher {
+  /// Registers a callback to be called when the application receives a hot
+  /// restart signal.
+  ///
+  /// The web engine does not implement hot restart signals; this is a dummy
+  /// implementation matching the native dart:ui API.
+  void registerHotRestartListener(VoidCallback callback) {}
+
+  /// Unregisters a callback registered by [registerHotRestartListener].
+  void unregisterHotRestartListener(VoidCallback callback) {}
   static PlatformDispatcher get instance => engine.EnginePlatformDispatcher.instance;
 
   int? get engineId;

@@ -20,8 +20,7 @@ G_BEGIN_DECLS
  *
  * Returns: a new #FlPluginRegistrar.
  */
-FlPluginRegistrar* fl_plugin_registrar_new(
-    FlBinaryMessenger* messenger);
+FlPluginRegistrar* fl_plugin_registrar_new(FlBinaryMessenger* messenger);
 
 G_END_DECLS
 

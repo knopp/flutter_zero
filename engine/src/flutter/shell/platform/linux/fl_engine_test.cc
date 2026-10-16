@@ -108,7 +108,7 @@ TEST(FlEngineTest, OnPreEngineRestart) {
       Initialize,
       ([&callback, &callback_user_data, &called](
            size_t version, const FlutterProjectArgs* args, void* user_data,
-           FLUTTER_API_SYMBOL(FlutterEngine) * engine_out) {
+           FLUTTER_API_SYMBOL(FlutterEngine)* engine_out) {
         called = true;
         callback = args->on_pre_engine_restart_callback;
         callback_user_data = user_data;
@@ -158,7 +158,7 @@ TEST(FlEngineTest, DartEntrypointArgs) {
       Initialize,
       ([&called, &set_args = args](
            size_t version, const FlutterProjectArgs* args, void* user_data,
-           FLUTTER_API_SYMBOL(FlutterEngine) * engine_out) {
+           FLUTTER_API_SYMBOL(FlutterEngine)* engine_out) {
         called = true;
         EXPECT_NE(set_args, args->dart_entrypoint_argv);
         EXPECT_EQ(args->dart_entrypoint_argc, 3);
@@ -180,10 +180,9 @@ TEST(FlEngineTest, EngineId) {
   g_autoptr(FlEngine) engine = fl_engine_new(project);
   int64_t engine_id;
   fl_engine_get_embedder_api(engine)->Initialize = MOCK_ENGINE_PROC(
-      Initialize,
-      ([&engine_id](size_t version, const FlutterProjectArgs* args,
-                    void* user_data,
-                    FLUTTER_API_SYMBOL(FlutterEngine) * engine_out) {
+      Initialize, ([&engine_id](size_t version, const FlutterProjectArgs* args,
+                                void* user_data,
+                                FLUTTER_API_SYMBOL(FlutterEngine)* engine_out) {
         engine_id = args->engine_id;
         return kSuccess;
       }));
@@ -209,7 +208,7 @@ TEST(FlEngineTest, UIIsolateDefaultThreadPolicy) {
       Initialize,
       ([&same_task_runner](size_t version, const FlutterProjectArgs* args,
                            void* user_data,
-                           FLUTTER_API_SYMBOL(FlutterEngine) * engine_out) {
+                           FLUTTER_API_SYMBOL(FlutterEngine)* engine_out) {
         same_task_runner = args->custom_task_runners->platform_task_runner ==
                            args->custom_task_runners->ui_task_runner;
         return kSuccess;
@@ -235,7 +234,7 @@ TEST(FlEngineTest, UIIsolateOnPlatformTaskRunner) {
       Initialize,
       ([&same_task_runner](size_t version, const FlutterProjectArgs* args,
                            void* user_data,
-                           FLUTTER_API_SYMBOL(FlutterEngine) * engine_out) {
+                           FLUTTER_API_SYMBOL(FlutterEngine)* engine_out) {
         same_task_runner = args->custom_task_runners->platform_task_runner ==
                            args->custom_task_runners->ui_task_runner;
         return kSuccess;
@@ -261,7 +260,7 @@ TEST(FlEngineTest, UIIsolateOnSeparateThread) {
       Initialize,
       ([&separate_thread](size_t version, const FlutterProjectArgs* args,
                           void* user_data,
-                          FLUTTER_API_SYMBOL(FlutterEngine) * engine_out) {
+                          FLUTTER_API_SYMBOL(FlutterEngine)* engine_out) {
         separate_thread = args->custom_task_runners->ui_task_runner == nullptr;
         return kSuccess;
       }));

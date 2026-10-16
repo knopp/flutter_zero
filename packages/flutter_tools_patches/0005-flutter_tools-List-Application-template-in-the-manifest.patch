@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matej Knopp <matej.knopp@gmail.com>
+Date: Mon, 28 Sep 2026 23:15:00 +0200
+Subject: [PATCH] flutter_tools: List Application template in the manifest.
+
+The Application.kt template was not listed in template_manifest.json,
+so `flutter create` never rendered it while AndroidManifest.xml
+referenced it, producing a project that crashes on launch.
+
+---
+diff --git a/packages/flutter_tools/templates/template_manifest.json b/packages/flutter_tools/templates/template_manifest.json
+index 0765605bb2d..e6e08d90881 100644
+--- a/packages/flutter_tools/templates/template_manifest.json
++++ b/packages/flutter_tools/templates/template_manifest.json
+@@ -27,6 +27,7 @@
+     "templates/app/android-java.tmpl/build.gradle.kts.tmpl",
+     "templates/app/android-java.tmpl/projectName_android.iml.tmpl",
+     "templates/app/android-kotlin.tmpl/app/build.gradle.kts.tmpl",
++    "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl",
+     "templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl",
+     "templates/app/android-kotlin.tmpl/build.gradle.kts.tmpl",
+     "templates/app/android-kotlin.tmpl/projectName_android.iml.tmpl",

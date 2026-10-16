@@ -211,11 +211,7 @@ public class FlutterEngineGroupComponentTest {
     doAnswer(invocation -> jniAttached = true).when(secondMockFlutterJNI).attachToNative();
     doReturn(secondMockFlutterJNI)
         .when(mockFlutterJNI)
-        .spawn(
-            nullable(String.class),
-            nullable(String.class),
-            nullable(List.class),
-            eq(2l));
+        .spawn(nullable(String.class), nullable(String.class), nullable(List.class), eq(2l));
     List<String> secondDartEntrypointArgs = new ArrayList<String>();
     FlutterEngine secondEngine =
         engineGroupUnderTest.createAndRunEngine(
@@ -226,9 +222,6 @@ public class FlutterEngineGroupComponentTest {
     assertEquals(2, engineGroupUnderTest.activeEngines.size());
     verify(mockFlutterJNI, times(1))
         .spawn(
-            nullable(String.class),
-            nullable(String.class),
-            eq(secondDartEntrypointArgs),
-            eq(2l));
+            nullable(String.class), nullable(String.class), eq(secondDartEntrypointArgs), eq(2l));
   }
 }

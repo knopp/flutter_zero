@@ -359,7 +359,8 @@ TEST_F(DartIsolateTest, CanCreateServiceIsolate) {
   ASSERT_TRUE(root_isolate);
   ASSERT_EQ(root_isolate->GetPhase(), DartIsolate::Phase::Running);
   service_isolate_latch.Wait();
-  // This is a bit racy, the latch completes before the isolate is fully running.
+  // This is a bit racy, the latch completes before the isolate is fully
+  // running.
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   ASSERT_TRUE(root_isolate->Shutdown());
 }

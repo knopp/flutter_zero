@@ -1,0 +1,68 @@
+# Runs the smoke test against the already-published engine artifacts.
+#
+# Companion of the build-and-upload workflow. Both trigger on pull requests
+# and share the same guard: the build-and-upload workflow checks whether the
+# engine bucket already carries the pull request's engine content hash, and
+# builds + smoke tests fresh artifacts under a CI-bucket prefix when it does
+# not. This workflow covers the other case - the engine content is already
+# deployed (no build needed), and the smoke test runs against the engine
+# bucket. The two never run for the same pull request.
+#
+# NOTE: this file is intentionally not generated; edit directly.
+
+name: Call Smoke Test
+
+# Quoted so that YAML 1.1 parsers do not coerce the key to a boolean.
+'on':
+  pull_request:
+  # Manual fallback (smoke tests the currently deployed engine artifacts).
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Resolve the engine artifacts state
+    runs-on: ubuntu-latest
+    outputs:
+      engine_content_hash: ${{ steps.engine_content_hash.outputs.value }}
+      already_deployed: ${{ steps.check.outputs.already_deployed }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Generate engine content hash
+        id: engine_content_hash
+        run: |
+          engine_content_hash=$(bin/internal/content_aware_hash.sh)
+          echo "::notice:: Engine content hash: ${engine_content_hash}"
+          echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT
+
+      - name: Check if the engine artifacts are already deployed
+        # Mirrors the guard of the build-and-upload workflow (same hash, same
+        # probe), but with the inverted conclusion: the smoke test here runs
+        # against the production engine bucket, which only carries this hash
+        # when build-and-upload decided (for the same commit) not to build.
+        id: check
+        env:
+          HASH: ${{ steps.engine_content_hash.outputs.value }}
+        run: |
+          URL="https://engine.flutter0.dev/flutter_infra_release/flutter/$HASH/engine_stamp.json"
+          if curl --head --silent --fail "$URL" > /dev/null; then
+            echo "Engine artifacts already deployed at $URL"
+            echo "already_deployed=true" >> $GITHUB_OUTPUT
+          else
+            echo "Engine artifacts are not deployed at $URL"
+            echo "already_deployed=false" >> $GITHUB_OUTPUT
+          fi
+
+  smoke:
+    name: Run the smoke test
+    needs: [guard]
+    if: ${{ needs.guard.outputs.already_deployed == 'true' }}
+    uses: ./.github/workflows/smoke-test.yml
+    with:
+      # Empty selects the production engine bucket inside the smoke test
+      # workflow.
+      run_id: ''

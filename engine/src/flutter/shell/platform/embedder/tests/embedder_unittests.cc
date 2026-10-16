@@ -1034,8 +1034,8 @@ TEST_F(EmbedderTest, CanPostTaskToAllNativeThreads) {
   ASSERT_EQ(captures.platform_threads_count, 1u);
   ASSERT_EQ(captures.ui_threads_count, 1u);
   ASSERT_EQ(captures.worker_threads_count, worker_count);
-  EXPECT_GE(captures.worker_threads_count - 1, 2u);
-  EXPECT_LE(captures.worker_threads_count - 1, 4u);
+  EXPECT_GE(captures.worker_threads_count, 2u);
+  EXPECT_LE(captures.worker_threads_count, 4u);
 
   platform_task_runner->PostTask([&]() {
     engine.reset();

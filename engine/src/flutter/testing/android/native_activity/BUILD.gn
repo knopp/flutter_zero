@@ -13,9 +13,7 @@ source_set("native_activity") {
     "native_activity.h",
   ]
 
-  public_deps = [
-    "//flutter/fml",
-  ]
+  public_deps = [ "//flutter/fml" ]
 
   libs = [
     "android",

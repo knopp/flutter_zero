@@ -268,6 +268,13 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   exist, but the target directory does exist."""
   if target_cpu == 'arm64':
     env_version = GetVisualStudioVersion()
+    # GetVisualStudioVersion() may return the numeric install-folder form
+    # (e.g. '18' for VS 2026). Map it back to the year key used by
+    # VC_VERSIONS.
+    for year_key, install_folder in MSVS_VERSIONS.items():
+      if env_version == install_folder:
+        env_version = year_key
+        break
     vc_version = VC_VERSIONS[env_version]
     prefix = 'Microsoft.' + vc_version
 

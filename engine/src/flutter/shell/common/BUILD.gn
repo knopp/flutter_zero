@@ -103,7 +103,8 @@ source_set("common") {
   ]
 }
 
-# These are in their own source_set to avoid a dependency cycle with //common/graphics
+# These are in their own source_set to avoid a dependency cycle with
+# //common/graphics
 source_set("base64") {
   sources = [
     "base64.cc",
@@ -165,9 +166,9 @@ if (enable_unittests) {
     testonly = true
 
     sources = [
-      "shell_test_platform_view.cc",
       "shell_test.cc",
       "shell_test.h",
+      "shell_test_platform_view.cc",
     ]
 
     public_deps = [

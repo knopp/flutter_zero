@@ -34,79 +34,51 @@ import java.util.Set;
 /**
  * A single Flutter execution environment.
  *
- * <p>
- * The {@code FlutterEngine} is the container through which Dart code can be run
- * in an Android
+ * <p>The {@code FlutterEngine} is the container through which Dart code can be run in an Android
  * application.
  *
- * <p>
- * Dart code in a {@code FlutterEngine} can execute in the background and Dart
- * code using the Flutter
- * framework on the Dart side. Rendering can be started and stopped, thus
- * allowing a {@code
- * FlutterEngine} to move from UI interaction to data-only processing and then
- * back to UI
+ * <p>Dart code in a {@code FlutterEngine} can execute in the background and Dart code using the
+ * Flutter framework on the Dart side. Rendering can be started and stopped, thus allowing a {@code
+ * FlutterEngine} to move from UI interaction to data-only processing and then back to UI
  * interaction.
  *
- * <p>
- * Multiple {@code FlutterEngine}s may exist, execute Dart code, and render UIs
- * within a single
- * Android app. For better memory performance characteristics, construct
- * multiple {@code
- * FlutterEngine}s via {@link io.flutter.embedding.engine.FlutterEngineGroup}
- * rather than via {@code
+ * <p>Multiple {@code FlutterEngine}s may exist, execute Dart code, and render UIs within a single
+ * Android app. For better memory performance characteristics, construct multiple {@code
+ * FlutterEngine}s via {@link io.flutter.embedding.engine.FlutterEngineGroup} rather than via {@code
  * FlutterEngine}'s constructor directly.
  *
- * <p>
- * To start running Dart and/or Flutter within this {@code FlutterEngine}, get a
- * reference to
+ * <p>To start running Dart and/or Flutter within this {@code FlutterEngine}, get a reference to
  * this engine's {@link DartExecutor} and then use {@link
  * DartExecutor#executeDartEntrypoint(DartExecutor.DartEntrypoint)}. The {@link
- * DartExecutor#executeDartEntrypoint(DartExecutor.DartEntrypoint)} method must
- * not be invoked twice
+ * DartExecutor#executeDartEntrypoint(DartExecutor.DartEntrypoint)} method must not be invoked twice
  * on the same {@code FlutterEngine}.
  *
- * <p>
- * Instatiating the first {@code FlutterEngine} per process will also load the
- * Flutter engine's
- * native library and start the Dart VM. Subsequent {@code FlutterEngine}s will
- * run on the same VM
- * instance but will have their own Dart <a
- * href=
- * "https://api.dartlang.org/stable/dart-isolate/Isolate-class.html">Isolate</a>
- * when the
- * {@link DartExecutor} is run. Each Isolate is a self-contained Dart
- * environment and cannot
- * communicate with each other except via Isolate ports.
+ * <p>Instatiating the first {@code FlutterEngine} per process will also load the Flutter engine's
+ * native library and start the Dart VM. Subsequent {@code FlutterEngine}s will run on the same VM
+ * instance but will have their own Dart <a href=
+ * "https://api.dartlang.org/stable/dart-isolate/Isolate-class.html">Isolate</a> when the {@link
+ * DartExecutor} is run. Each Isolate is a self-contained Dart environment and cannot communicate
+ * with each other except via Isolate ports.
  */
 public class FlutterEngine {
   private static final String TAG = "FlutterEngine";
 
-  @NonNull
-  private final FlutterJNI flutterJNI;
-  @NonNull
-  private final DartExecutor dartExecutor;
-  @NonNull
-  private final FlutterEngineConnectionRegistry pluginRegistry;
-  @NonNull
-  private final LocalizationPlugin localizationPlugin;
+  @NonNull private final FlutterJNI flutterJNI;
+  @NonNull private final DartExecutor dartExecutor;
+  @NonNull private final FlutterEngineConnectionRegistry pluginRegistry;
+  @NonNull private final LocalizationPlugin localizationPlugin;
 
   // System channels.
-  @NonNull
-  private final DeferredComponentChannel deferredComponentChannel;
-  @NonNull
-  private final LocalizationChannel localizationChannel;
+  @NonNull private final DeferredComponentChannel deferredComponentChannel;
+  @NonNull private final LocalizationChannel localizationChannel;
 
-  @NonNull
-  private final SystemChannel systemChannel;
+  @NonNull private final SystemChannel systemChannel;
 
   // Engine Lifecycle.
-  @NonNull
-  private final Set<EngineLifecycleListener> engineLifecycleListeners = new HashSet<>();
+  @NonNull private final Set<EngineLifecycleListener> engineLifecycleListeners = new HashSet<>();
 
   // Unique handle for this engine.
-  @NonNull
-  private final long engineId;
+  @NonNull private final long engineId;
 
   @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
   public static void resetNextEngineId() {
@@ -120,55 +92,43 @@ public class FlutterEngine {
   private static final Map<Long, FlutterEngine> idToEngine = new HashMap<>();
 
   @NonNull
-  private final EngineLifecycleListener engineLifecycleListener = new EngineLifecycleListener() {
-    @SuppressWarnings("unused")
-    public void onPreEngineRestart() {
-      Log.v(TAG, "onPreEngineRestart()");
-      for (EngineLifecycleListener lifecycleListener : engineLifecycleListeners) {
-        lifecycleListener.onPreEngineRestart();
-      }
-    }
+  private final EngineLifecycleListener engineLifecycleListener =
+      new EngineLifecycleListener() {
+        @SuppressWarnings("unused")
+        public void onPreEngineRestart() {
+          Log.v(TAG, "onPreEngineRestart()");
+          for (EngineLifecycleListener lifecycleListener : engineLifecycleListeners) {
+            lifecycleListener.onPreEngineRestart();
+          }
+        }
 
-    @Override
-    public void onEngineWillDestroy() {
-      // This inner implementation doesn't do anything since FlutterEngine sent this
-      // notification in the first place. It's meant for external listeners.
-    }
-  };
+        @Override
+        public void onEngineWillDestroy() {
+          // This inner implementation doesn't do anything since FlutterEngine sent this
+          // notification in the first place. It's meant for external listeners.
+        }
+      };
 
   /**
    * Constructs a new {@code FlutterEngine}.
    *
-   * <p>
-   * A new {@code FlutterEngine} does not execute any Dart code automatically. See
-   * {@link
-   * #getDartExecutor()} and
-   * {@link DartExecutor#executeDartEntrypoint(DartExecutor.DartEntrypoint)}
+   * <p>A new {@code FlutterEngine} does not execute any Dart code automatically. See {@link
+   * #getDartExecutor()} and {@link DartExecutor#executeDartEntrypoint(DartExecutor.DartEntrypoint)}
    * to begin executing Dart code within this {@code FlutterEngine}.
    *
-   * <p>
-   * A new {@code FlutterEngine} will not display any UI.
+   * <p>A new {@code FlutterEngine} will not display any UI.
    *
-   * <p>
-   * A new {@code FlutterEngine} automatically attaches all plugins. See
-   * {@link #getPlugins()}.
+   * <p>A new {@code FlutterEngine} automatically attaches all plugins. See {@link #getPlugins()}.
    *
-   * <p>
-   * A new {@code FlutterEngine} does come with all default system channels
-   * attached.
+   * <p>A new {@code FlutterEngine} does come with all default system channels attached.
    *
-   * <p>
-   * The first {@code FlutterEngine} instance constructed per process will also
-   * load the Flutter
+   * <p>The first {@code FlutterEngine} instance constructed per process will also load the Flutter
    * native library and start a Dart VM.
    *
-   * <p>
-   * In order to pass Dart VM initialization arguments (see {@link
-   * io.flutter.embedding.engine.FlutterShellArgs}) when creating the VM, manually
-   * set the
+   * <p>In order to pass Dart VM initialization arguments (see {@link
+   * io.flutter.embedding.engine.FlutterShellArgs}) when creating the VM, manually set the
    * initialization arguments by calling {@link
-   * io.flutter.embedding.engine.loader.FlutterLoader#startInitialization(Context)}
-   * and {@link
+   * io.flutter.embedding.engine.loader.FlutterLoader#startInitialization(Context)} and {@link
    * io.flutter.embedding.engine.loader.FlutterLoader#ensureInitializationComplete(Context,
    * String[])} before constructing the engine.
    */
@@ -177,23 +137,19 @@ public class FlutterEngine {
   }
 
   /**
-   * Same as {@link #FlutterEngine(Context)} with added support for passing Dart
-   * VM arguments.
+   * Same as {@link #FlutterEngine(Context)} with added support for passing Dart VM arguments.
    *
-   * <p>
-   * If the Dart VM has already started, the given arguments will have no effect.
+   * <p>If the Dart VM has already started, the given arguments will have no effect.
    */
   public FlutterEngine(@NonNull Context context, @Nullable String[] dartVmArgs) {
     this(context, /* flutterLoader */ null, /* flutterJNI */ null, dartVmArgs, true);
   }
 
   /**
-   * Same as {@link #FlutterEngine(Context)} with added support for passing Dart
-   * VM arguments and
+   * Same as {@link #FlutterEngine(Context)} with added support for passing Dart VM arguments and
    * avoiding automatic plugin registration.
    *
-   * <p>
-   * If the Dart VM has already started, the given arguments will have no effect.
+   * <p>If the Dart VM has already started, the given arguments will have no effect.
    */
   public FlutterEngine(
       @NonNull Context context,
@@ -208,34 +164,22 @@ public class FlutterEngine {
   }
 
   /**
-   * Same as {@link #FlutterEngine(Context, String[], boolean)} with added support
-   * for configuring
+   * Same as {@link #FlutterEngine(Context, String[], boolean)} with added support for configuring
    * whether the engine will receive restoration data.
    *
-   * <p>
-   * The {@code waitForRestorationData} flag controls whether the engine delays
-   * responding to
-   * requests from the framework for restoration data until that data has been
-   * provided to the
-   * engine via {@code RestorationChannel.setRestorationData(byte[] data)}. If the
-   * flag is false,
-   * the framework may temporarily initialize itself to default values before the
-   * restoration data
-   * has been made available to the engine. Setting {@code waitForRestorationData}
-   * to true avoids
+   * <p>The {@code waitForRestorationData} flag controls whether the engine delays responding to
+   * requests from the framework for restoration data until that data has been provided to the
+   * engine via {@code RestorationChannel.setRestorationData(byte[] data)}. If the flag is false,
+   * the framework may temporarily initialize itself to default values before the restoration data
+   * has been made available to the engine. Setting {@code waitForRestorationData} to true avoids
    * this extra work by delaying initialization until the data is available.
    *
-   * <p>
-   * When {@code waitForRestorationData} is set, {@code
-   * RestorationChannel.setRestorationData(byte[] data)} must be called at a later
-   * point in time. If
-   * it later turns out that no restoration data is available to restore the
-   * framework from, that
+   * <p>When {@code waitForRestorationData} is set, {@code
+   * RestorationChannel.setRestorationData(byte[] data)} must be called at a later point in time. If
+   * it later turns out that no restoration data is available to restore the framework from, that
    * method must still be called with null as an argument to indicate "no data".
    *
-   * <p>
-   * If the framework never requests the restoration data, this flag has no
-   * effect.
+   * <p>If the framework never requests the restoration data, this flag has no effect.
    */
   public FlutterEngine(
       @NonNull Context context,
@@ -252,14 +196,10 @@ public class FlutterEngine {
   }
 
   /**
-   * Same as
-   * {@link #FlutterEngine(Context, FlutterLoader, FlutterJNI, String[], boolean)}
-   * but with
+   * Same as {@link #FlutterEngine(Context, FlutterLoader, FlutterJNI, String[], boolean)} but with
    * no Dart VM flags and automatically registers plugins.
    *
-   * <p>
-   * {@code flutterJNI} should be a new instance that has never been attached to
-   * an engine
+   * <p>{@code flutterJNI} should be a new instance that has never been attached to an engine
    * before.
    */
   public FlutterEngine(
@@ -270,9 +210,7 @@ public class FlutterEngine {
   }
 
   /**
-   * Same as
-   * {@link #FlutterEngine(Context, FlutterLoader, FlutterJNI, String[], boolean)},
-   * plus the
+   * Same as {@link #FlutterEngine(Context, FlutterLoader, FlutterJNI, String[], boolean)}, plus the
    * ability to provide a custom {@code PlatformViewsController}.
    */
   public FlutterEngine(
@@ -281,13 +219,7 @@ public class FlutterEngine {
       @NonNull FlutterJNI flutterJNI,
       @Nullable String[] dartVmArgs,
       boolean automaticallyRegisterPlugins) {
-    this(
-        context,
-        flutterLoader,
-        flutterJNI,
-        dartVmArgs,
-        automaticallyRegisterPlugins,
-        false);
+    this(context, flutterLoader, flutterJNI, dartVmArgs, automaticallyRegisterPlugins, false);
   }
 
   /** Fully configurable {@code FlutterEngine} constructor. */
@@ -338,7 +270,8 @@ public class FlutterEngine {
     this.dartExecutor = new DartExecutor(flutterJNI, assetManager, engineId);
     this.dartExecutor.onAttachedToJNI();
 
-    DeferredComponentManager deferredComponentManager = FlutterInjector.instance().deferredComponentManager();
+    DeferredComponentManager deferredComponentManager =
+        FlutterInjector.instance().deferredComponentManager();
 
     deferredComponentChannel = new DeferredComponentChannel(dartExecutor);
     localizationChannel = new LocalizationChannel(dartExecutor);
@@ -372,8 +305,9 @@ public class FlutterEngine {
       attachToJni();
     }
 
-    this.pluginRegistry = new FlutterEngineConnectionRegistry(
-        context.getApplicationContext(), this, flutterLoader, group);
+    this.pluginRegistry =
+        new FlutterEngineConnectionRegistry(
+            context.getApplicationContext(), this, flutterLoader, group);
 
     localizationPlugin.sendLocalesToFlutter(context.getResources().getConfiguration());
 
@@ -399,28 +333,19 @@ public class FlutterEngine {
   }
 
   /**
-   * Create a second {@link io.flutter.embedding.engine.FlutterEngine} based on
-   * this current one by
-   * sharing as much resources together as possible to minimize startup latency
-   * and memory cost.
+   * Create a second {@link io.flutter.embedding.engine.FlutterEngine} based on this current one by
+   * sharing as much resources together as possible to minimize startup latency and memory cost.
    *
-   * @param context            is a Context used to create the {@link
-   *                           io.flutter.embedding.engine.FlutterEngine}. Could
-   *                           be the same Context as the current engine
-   *                           or a different one. Generally, only an application
-   *                           Context is needed for the {@link
-   *                           io.flutter.embedding.engine.FlutterEngine} and its
-   *                           dependencies.
-   * @param dartEntrypoint     specifies the {@link DartEntrypoint} the new engine
-   *                           should run. It
-   *                           doesn't need to be the same entrypoint as the
-   *                           current engine but must be built in the same
-   *                           AOT or snapshot.
-   * @param initialRoute       The name of the initial Flutter `Navigator` `Route`
-   *                           to load. If this is
-   *                           null, it will default to the "/" route.
-   * @param dartEntrypointArgs Arguments passed as a list of string to Dart's
-   *                           entrypoint function.
+   * @param context is a Context used to create the {@link
+   *     io.flutter.embedding.engine.FlutterEngine}. Could be the same Context as the current engine
+   *     or a different one. Generally, only an application Context is needed for the {@link
+   *     io.flutter.embedding.engine.FlutterEngine} and its dependencies.
+   * @param dartEntrypoint specifies the {@link DartEntrypoint} the new engine should run. It
+   *     doesn't need to be the same entrypoint as the current engine but must be built in the same
+   *     AOT or snapshot.
+   * @param initialRoute The name of the initial Flutter `Navigator` `Route` to load. If this is
+   *     null, it will default to the "/" route.
+   * @param dartEntrypointArgs Arguments passed as a list of string to Dart's entrypoint function.
    * @return a new {@link io.flutter.embedding.engine.FlutterEngine}.
    */
   @NonNull
@@ -435,32 +360,29 @@ public class FlutterEngine {
           "Spawn can only be called on a fully constructed FlutterEngine");
     }
 
-    FlutterJNI newFlutterJNI = flutterJNI.spawn(
-        dartEntrypoint.dartEntrypointFunctionName,
-        dartEntrypoint.dartEntrypointLibrary,
-        dartEntrypointArgs,
-        nextEngineId);
+    FlutterJNI newFlutterJNI =
+        flutterJNI.spawn(
+            dartEntrypoint.dartEntrypointFunctionName,
+            dartEntrypoint.dartEntrypointLibrary,
+            dartEntrypointArgs,
+            nextEngineId);
     return new FlutterEngine(
         context, // Context.
         null, // FlutterLoader. A null value passed here causes the constructor to get it from
-              // the
+        // the
         // FlutterInjector.
         newFlutterJNI, // FlutterJNI.
         null, // String[]. The Dart VM has already started, this arguments will have no
-              // effect.
+        // effect.
         automaticallyRegisterPlugins, // boolean.
         waitForRestorationData); // boolean
   }
 
   /**
-   * Cleans up all components within this {@code FlutterEngine} and destroys the
-   * associated Dart
-   * Isolate. All state held by the Dart Isolate, such as the Flutter Elements
-   * tree, is lost.
+   * Cleans up all components within this {@code FlutterEngine} and destroys the associated Dart
+   * Isolate. All state held by the Dart Isolate, such as the Flutter Elements tree, is lost.
    *
-   * <p>
-   * This {@code FlutterEngine} instance should be discarded after invoking this
-   * method.
+   * <p>This {@code FlutterEngine} instance should be discarded after invoking this method.
    */
   public void destroy() {
     Log.v(TAG, "Destroying.");
@@ -481,8 +403,7 @@ public class FlutterEngine {
   }
 
   /**
-   * Adds a {@code listener} to be notified of Flutter engine lifecycle events,
-   * e.g., {@code
+   * Adds a {@code listener} to be notified of Flutter engine lifecycle events, e.g., {@code
    * onPreEngineStart()}.
    */
   public void addEngineLifecycleListener(@NonNull EngineLifecycleListener listener) {
@@ -500,14 +421,10 @@ public class FlutterEngine {
   /**
    * The Dart execution context associated with this {@code FlutterEngine}.
    *
-   * <p>
-   * The {@link DartExecutor} can be used to start executing Dart code from a
-   * given entrypoint.
+   * <p>The {@link DartExecutor} can be used to start executing Dart code from a given entrypoint.
    * See {@link DartExecutor#executeDartEntrypoint(DartExecutor.DartEntrypoint)}.
    *
-   * <p>
-   * Use the {@link DartExecutor} to connect any desired message channels and
-   * method channels to
+   * <p>Use the {@link DartExecutor} to connect any desired message channels and method channels to
    * facilitate communication between Android and Dart/Flutter.
    */
   @NonNull
@@ -521,26 +438,20 @@ public class FlutterEngine {
     return localizationChannel;
   }
 
-  /**
-   * System channel that allows manual installation and state querying of deferred
-   * components.
-   */
+  /** System channel that allows manual installation and state querying of deferred components. */
   @NonNull
   public DeferredComponentChannel getDeferredComponentChannel() {
     return deferredComponentChannel;
   }
 
-  /**
-   * System channel that sends memory pressure warnings from Android to Flutter.
-   */
+  /** System channel that sends memory pressure warnings from Android to Flutter. */
   @NonNull
   public SystemChannel getSystemChannel() {
     return systemChannel;
   }
 
   /**
-   * Plugin registry, which registers plugins that want to be applied to this
-   * {@code FlutterEngine}.
+   * Plugin registry, which registers plugins that want to be applied to this {@code FlutterEngine}.
    */
   @NonNull
   public PluginRegistry getPlugins() {
@@ -574,16 +485,14 @@ public class FlutterEngine {
   }
 
   /**
-   * Returns engine for the given identifier or null if identifier is not valid.
-   * The handle can be
+   * Returns engine for the given identifier or null if identifier is not valid. The handle can be
    * obtained through
    *
    * <pre>
    * PlatformDispatcher.instance.engineId
    * </pre>
    *
-   * <p>
-   * Must be called on the UI thread.
+   * <p>Must be called on the UI thread.
    */
   @Nullable
   @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
@@ -599,8 +508,7 @@ public class FlutterEngine {
     /**
      * Lifecycle callback invoked before the Flutter engine is destroyed.
      *
-     * <p>
-     * For the duration of the call, the Flutter engine is still valid.
+     * <p>For the duration of the call, the Flutter engine is still valid.
      */
     void onEngineWillDestroy();
   }

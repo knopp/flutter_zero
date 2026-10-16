@@ -51,11 +51,10 @@ import io.flutter.plugin.common.BinaryMessenger;
  * be retrieved through a {@link Context}. Developers can access the application context via {@link
  * FlutterPluginBinding#getApplicationContext()}.
  *
- * All plugins must respect the possibility that a
- * Flutter experience may never be associated with an {@code Activity}, e.g., when Flutter is used
- * for background behavior. Additionally, all plugins must respect that a {@code Activity}s may come
- * and go over time, thus requiring plugins to cleanup resources and recreate those resources as the
- * {@code Activity} comes and goes.
+ * <p>All plugins must respect the possibility that a Flutter experience may never be associated
+ * with an {@code Activity}, e.g., when Flutter is used for background behavior. Additionally, all
+ * plugins must respect that a {@code Activity}s may come and go over time, thus requiring plugins
+ * to cleanup resources and recreate those resources as the {@code Activity} comes and goes.
  */
 public interface FlutterPlugin {
 

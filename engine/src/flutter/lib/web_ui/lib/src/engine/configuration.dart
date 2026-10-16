@@ -47,6 +47,7 @@ library configuration;
 import 'dart:js_interop';
 
 import 'package:meta/meta.dart';
+
 import 'dom.dart';
 
 enum CanvasKitVariant {
@@ -139,13 +140,11 @@ class FlutterConfiguration {
   }
 
   FlutterConfiguration withOverrides(JsFlutterConfiguration? overrides) {
-    final newJsConfig =
-        objectConstructor.assign(
-              <String, Object>{}.jsify(),
-              _configuration.jsify(),
-              overrides.jsify(),
-            )
-            as JsFlutterConfiguration;
+    final newJsConfig = objectConstructor.assign(
+      <String, Object>{}.jsify(),
+      _configuration.jsify(),
+      overrides.jsify(),
+    ) as JsFlutterConfiguration;
     final newConfig = FlutterConfiguration();
     newConfig._configuration = newJsConfig;
     return newConfig;

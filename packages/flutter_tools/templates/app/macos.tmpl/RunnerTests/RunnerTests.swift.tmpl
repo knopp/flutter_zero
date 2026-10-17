@@ -1,6 +1,6 @@
 import Cocoa
 import FlutterMacOS
-import Testing
+import XCTest
 {{#withPlatformChannelPluginHook}}
 
 {{#withSwiftPackageManager}}
@@ -12,25 +12,15 @@ import Testing
 
 // This demonstrates a simple unit test of the Swift portion of this plugin's implementation.
 //
-// See https://developer.apple.com/xcode/swift-testing/ for more information about using
-// Swift Testing.
+// See https://developer.apple.com/documentation/xctest for more information about using XCTest.
 {{/withPlatformChannelPluginHook}}
 
-struct RunnerTests {
+class RunnerTests: XCTestCase {
 
-{{#withPlatformChannelPluginHook}}
-  @Test func getPlatformVersionSucceeds() throws {
-    let plugin = {{pluginClass}}()
-
-    let result = try plugin.getPlatformVersion()
-    #expect(result == "macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
-  }
-{{/withPlatformChannelPluginHook}}
 {{^withPlatformChannelPluginHook}}
   func testExample() {
     // If you add code to the Runner application, consider adding tests here.
-    // See https://developer.apple.com/xcode/swift-testing/ for more information about using
-    // Swift Testing.
+    // See https://developer.apple.com/documentation/xctest for more information about using XCTest.
   }
 {{/withPlatformChannelPluginHook}}
 

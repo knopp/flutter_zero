@@ -58,7 +58,6 @@ void main() {
         '$windowsDesktopPath\\flutter_windows.dll.lib',
         '$windowsDesktopPath\\flutter_windows.dll.pdb',
         '$windowsDesktopPath\\flutter_plugin_registrar.h',
-        '$windowsDesktopPath\\flutter_texture_registrar.h',
         '$windowsDesktopPath\\flutter_windows.h',
         icuData,
         '$windowsCppClientWrapper\\foo',

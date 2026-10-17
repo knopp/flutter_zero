@@ -1229,7 +1229,6 @@ class WebReleaseBundle extends Target {
       targetPlatform: TargetPlatform.web_javascript,
       buildMode: buildMode,
     );
-    final Depfile bundledDepfile = _bundleLocalRobotoFallback(environment, depfile);
     final DepfileService depfileService = environment.depFileService;
 
     final bool webContentHash = compileTargets.any(
@@ -1238,18 +1237,18 @@ class WebReleaseBundle extends Target {
     if (webContentHash) {
       final WebAssetHashResult hashResult = hashWebAssets(outputDirectory);
       final Map<String, File> renamedOutputs = hashResult.renamedFiles;
-      final List<File> updatedOutputs = bundledDepfile.outputs.map((File f) {
+      final List<File> updatedOutputs = depfile.outputs.map((File f) {
         final String normalizedPath = environment.fileSystem.path.normalize(f.path);
         return renamedOutputs[normalizedPath] ?? renamedOutputs[f.path] ?? f;
       }).toList();
       depfileService.writeToFile(
-        Depfile(bundledDepfile.inputs, updatedOutputs),
+        Depfile(depfile.inputs, updatedOutputs),
         environment.buildDir.childFile('flutter_assets.d'),
       );
       injectManifestBuildConfig(environment.outputDir, hashResult);
     } else {
       depfileService.writeToFile(
-        bundledDepfile,
+        depfile,
         environment.buildDir.childFile('flutter_assets.d'),
       );
     }
@@ -1297,61 +1296,9 @@ class WebReleaseBundle extends Target {
     environment.outputDir.childFile('version.json').writeAsStringSync(jsonEncode(versionInfo));
   }
 
-  Depfile _bundleLocalRobotoFallback(Environment environment, Depfile depfile) {
-    if (environment.defines[kUseLocalCanvasKitFlag] != 'true') {
-      return depfile;
-    }
-
-    final File fontManifestFile = environment.outputDir
-        .childDirectory('assets')
-        .childFile(_kFontManifestJsonFile);
-    final manifestJson = fontManifestFile.existsSync()
-        ? (jsonDecode(fontManifestFile.readAsStringSync()) as List<Object?>)
-        : <Object?>[];
-
-    final bool hasRobotoFamily = manifestJson.any((Object? entry) {
-      return entry is Map<String, Object?> && entry['family'] == _kBundledFallbackRobotoFamily;
-    });
-    if (hasRobotoFamily) {
-      return depfile;
-    }
-
-    final File sourceRobotoFont = environment.fileSystem.file(
-      environment.fileSystem.path.join(
-        Cache.flutterRoot!,
-        'engine',
-        'src',
-        'flutter',
-        'txt',
-        'third_party',
-        'fonts',
-        'Roboto-Regular.ttf',
-      ),
-    );
-    if (!sourceRobotoFont.existsSync()) {
-      throwToolExit('Failed to find the bundled Roboto font at ${sourceRobotoFont.path}.');
-    }
-
-    manifestJson.add(<String, Object>{
-      'family': _kBundledFallbackRobotoFamily,
-      'fonts': <Map<String, String>>[
-        <String, String>{'asset': _kBundledFallbackRobotoAsset},
-      ],
-    });
-    fontManifestFile.parent.createSync(recursive: true);
-    fontManifestFile.writeAsStringSync(jsonEncode(manifestJson));
-
-    final File bundledRobotoFont = environment.outputDir
-        .childDirectory('assets')
-        .childFile(_kBundledFallbackRobotoAsset);
-    bundledRobotoFont.parent.createSync(recursive: true);
-    sourceRobotoFont.copySync(bundledRobotoFont.path);
-
-    return Depfile(
-      <File>[...depfile.inputs, sourceRobotoFont],
-      <File>[...depfile.outputs, fontManifestFile, bundledRobotoFont],
-    );
-  }
+  // flutter_zero never bundles the Roboto fallback font (headless engine, no
+  // txt/third_party/fonts tree), so the upstream `_bundleLocalRobotoFallback`
+  // hook is removed entirely.
 }
 
 class WebTemplatedFiles extends Target {
@@ -1599,39 +1546,14 @@ class WebBuiltInAssets extends Target {
   @override
   List<Source> get inputs => const <Source>[Source.hostArtifact(HostArtifact.flutterWebSdk)];
 
-  Directory get _canvasKitDirectory => globals.fs.directory(
-    fileSystem.path.join(
-      globals.artifacts!.getHostArtifact(HostArtifact.flutterWebSdk).path,
-      'canvaskit',
-    ),
-  );
-
-  List<File> get _canvasKitFiles =>
-      _canvasKitDirectory.listSync(recursive: true).whereType<File>().toList();
-
-  String _filePathRelativeToCanvasKitDirectory(File file) =>
-      fileSystem.path.relative(file.path, from: _canvasKitDirectory.path);
-
   @override
   List<Source> get outputs => <Source>[
     const Source.pattern('{BUILD_DIR}/flutter.js'),
     const Source.pattern('{BUILD_DIR}/flutter.js.map'),
-    for (final File file in _canvasKitFiles)
-      Source.pattern('{BUILD_DIR}/canvaskit/${_filePathRelativeToCanvasKitDirectory(file)}'),
   ];
 
   @override
   Future<void> build(Environment environment) async {
-    for (final File file in _canvasKitFiles) {
-      final String relativePath = _filePathRelativeToCanvasKitDirectory(file);
-      final String targetPath = fileSystem.path.join(
-        environment.outputDir.path,
-        'canvaskit',
-        relativePath,
-      );
-      file.copySync(targetPath);
-    }
-
     // Write the Flutter loader and its source map.
     final Directory flutterJsDirectory = fileSystem.directory(
       globals.artifacts!.getHostArtifact(HostArtifact.flutterJsDirectory).path,

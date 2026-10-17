@@ -31,7 +31,6 @@ class FlutterCache extends Cache {
     required FlutterProjectFactory projectFactory,
     super.stdio,
   }) : super(logger: logger, platform: platform, artifacts: <ArtifactSet>[]) {
-    registerArtifact(MaterialFonts(this));
     registerArtifact(GradleWrapper(this));
     registerArtifact(AndroidGenSnapshotArtifacts(this, platform: platform));
     registerArtifact(AndroidInternalBuildArtifacts(this));
@@ -256,7 +255,7 @@ class FlutterSdk extends EngineCachedArtifact {
   String get displayName => 'Flutter SDK';
 
   @override
-  List<String> getPackageDirs() => const <String>['sky_engine', 'flutter_gpu'];
+  List<String> getPackageDirs() => const <String>['sky_engine'];
 
   @override
   List<List<String>> getBinaryDirs() {
@@ -531,7 +530,7 @@ class GradleWrapper extends CachedArtifact {
 
   List<String> get _gradleScripts => <String>['gradlew', 'gradlew.bat'];
 
-  Uri _toStorageUri(String path) => Uri.parse('${cache.storageBaseUrl}/$path');
+  Uri _toStorageUri(String path) => Uri.parse('${cache.originalStorageUrl}/$path');
 
   @override
   Future<void> updateInner(
@@ -843,7 +842,7 @@ class IosUsbArtifacts extends CachedArtifact {
 
   @visibleForTesting
   Uri get archiveUri => Uri.parse(
-    '${cache.realmlessStorageBaseUrl}/flutter_infra_release/'
+    '${cache.originalStorageUrl}/flutter_infra_release/'
     'ios-usb-dependencies/arm64_x86_64${cache.useUnsignedMacBinaries ? '/unsigned' : ''}'
     '/$name/$version/$name.zip',
   );

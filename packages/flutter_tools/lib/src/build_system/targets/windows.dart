@@ -25,7 +25,6 @@ const _kWindowsArtifacts = <String>[
   'flutter_export.h',
   'flutter_messenger.h',
   'flutter_plugin_registrar.h',
-  'flutter_texture_registrar.h',
   'flutter_windows.h',
 ];
 

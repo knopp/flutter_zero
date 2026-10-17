@@ -149,7 +149,7 @@ class ArtifactPublisher {
       // with no prefix.
       final baseDestination = name.contains('flutter.io')
           // android
-          ? ''
+          ? './'
           : 'flutter_infra_release/flutter/\${{ steps.engine_content_hash.outputs.value }}/${artifact.outputPath}';
       _writeR2UploadStep(
         steps,
@@ -750,7 +750,7 @@ void _writeArtifactTestJobs(
       run.writeln(r'echo "value=${engine_content_hash}" >> $GITHUB_OUTPUT');
     }
     {
-      final step = steps.beginMap('name', 'Copy g lient file');
+      final step = steps.beginMap('name', 'Copy gclient file');
       final run = step.beginMap('run', '|');
       final gclientFile = gclientFileFor[job.gclient];
       if (gclientFile == null) {

@@ -4,31 +4,25 @@ Date: Sat, 8 Aug 2026 20:13:45 +0200
 Subject: [PATCH] flutter_tools: Update app template.
 
 ---
- .../androidIdentifier/Application.kt.tmpl     |  47 +++
- .../androidIdentifier/MainActivity.kt.tmpl    |   4 +-
- .../app/src/main/AndroidManifest.xml.tmpl     |   2 +-
- .../app/ios.tmpl/Runner/AppDelegate.swift     |  11 +-
- .../templates/app/lib/main.dart.tmpl          | 272 -----------------
- .../linux.tmpl/runner/my_application.cc.tmpl  |  66 +---
- .../Runner.xcodeproj/project.pbxproj.tmpl     |   6 +-
- .../app/macos.tmpl/Runner/AppDelegate.swift   |   8 +
- .../macos.tmpl/Runner/Base.lproj/MainMenu.xib |  16 +-
- .../macos.tmpl/Runner/MainFlutterWindow.swift |  15 -
- .../RunnerTests/RunnerTests.swift.tmpl        |  15 -
- .../templates/app/pubspec.yaml.tmpl           | 112 -------
- .../app/windows.tmpl/runner/CMakeLists.txt    |   2 -
- .../windows.tmpl/runner/flutter_window.cpp    |  71 -----
- .../app/windows.tmpl/runner/flutter_window.h  |  33 --
- .../app/windows.tmpl/runner/main.cpp.tmpl     |  11 +-
- .../app/windows.tmpl/runner/win32_window.cpp  | 288 ------------------
- .../app/windows.tmpl/runner/win32_window.h    | 102 -------
- 18 files changed, 83 insertions(+), 998 deletions(-)
- create mode 100644 packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl
- delete mode 100644 packages/flutter_tools/templates/app/macos.tmpl/Runner/MainFlutterWindow.swift
- delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.cpp
- delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/flutter_window.h
- delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.cpp
- delete mode 100644 packages/flutter_tools/templates/app/windows.tmpl/runner/win32_window.h
+ ...app/src/main/kotlin/androidIdentifier/Application.kt.tmpl | 47 +++++++++++++++++++++++++++++++++++++++++++++++
+ ...src/main/kotlin/androidIdentifier/MainActivity.kt.tmpl    | 4 ++--
+ ...app/android.tmpl/app/src/main/AndroidManifest.xml.tmpl    | 2 +-
+ ...templates/app/ios.tmpl/Runner/AppDelegate.swift           | 11 ++++++-----
+ packages/flutter_tools/templates/app/lib/main.dart.tmpl      | 272 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ...templates/app/linux.tmpl/runner/my_application.cc.tmpl    | 51 ++++++++++++++-------------------------------------
+ ...app/macos.tmpl/Runner.xcodeproj/project.pbxproj.tmpl      | 6 +-----
+ ...templates/app/macos.tmpl/Runner/AppDelegate.swift         | 8 ++++++++
+ ...templates/app/macos.tmpl/Runner/Base.lproj/MainMenu.xib   | 16 ++--------------
+ ...templates/app/macos.tmpl/Runner/MainFlutterWindow.swift   | 15 ---------------
+ ...app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl         | 18 ++++--------------
+ packages/flutter_tools/templates/app/pubspec.yaml.tmpl       | 114 ------------------------------------------------------------------------------------------------------------------
+ ...templates/app/windows.tmpl/runner/CMakeLists.txt          | 2 --
+ ...templates/app/windows.tmpl/runner/flutter_window.cpp      | 71 -----------------------------------------------------------------------
+ ...templates/app/windows.tmpl/runner/flutter_window.h        | 33 ---------------------------------
+ ...templates/app/windows.tmpl/runner/main.cpp.tmpl           | 11 ++++-------
+ ...templates/app/windows.tmpl/runner/win32_window.cpp        | 288 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ...templates/app/windows.tmpl/runner/win32_window.h          | 102 ------------------------------------------------------------------------------------------------------
+ 18 files changed, 89 insertions(+), 982 deletions(-)
 
 diff --git a/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl b/packages/flutter_tools/templates/app/android-kotlin.tmpl/app/src/main/kotlin/androidIdentifier/Application.kt.tmpl
 new file mode 100644
@@ -135,11 +129,11 @@ index c30b367ec0a..d53b76aa22c 100644
 -  }
  }
 diff --git a/packages/flutter_tools/templates/app/lib/main.dart.tmpl b/packages/flutter_tools/templates/app/lib/main.dart.tmpl
-index a23bfa403cc..34f46e2429c 100644
+index 9ce807ce032..34f46e2429c 100644
 --- a/packages/flutter_tools/templates/app/lib/main.dart.tmpl
 +++ b/packages/flutter_tools/templates/app/lib/main.dart.tmpl
 @@ -1,274 +1,2 @@
--import 'package:flutter/material.dart';
+-import 'package:material_ui/material_ui.dart';
 -{{#withEmptyMain}}
 -
  void main() {
@@ -414,10 +408,19 @@ index a23bfa403cc..34f46e2429c 100644
 -{{/withFfi}}
 -{{/withEmptyMain}}
 diff --git a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
-index 3b8611caea9..6ff97760cce 100644
+index e1224f0b763..6ff97760cce 100644
 --- a/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
 +++ b/packages/flutter_tools/templates/app/linux.tmpl/runner/my_application.cc.tmpl
-@@ -10,72 +10,30 @@
+@@ -1,62 +1,39 @@
+ #include "my_application.h"
+ 
+ #include <flutter_linux/flutter_linux.h>
++#ifdef GDK_WINDOWING_X11
++#include <gdk/gdkx.h>
++#endif
+ 
+ #include "flutter/generated_plugin_registrant.h"
+ 
  struct _MyApplication {
    GtkApplication parent_instance;
    char** dart_entrypoint_arguments;
@@ -434,40 +437,23 @@ index 3b8611caea9..6ff97760cce 100644
  // Implements GApplication::activate.
 -static void my_application_activate(GApplication* application) {
 -  MyApplication* self = MY_APPLICATION(application);
+-
 -  GtkWindow* window =
 -      GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
--
--  // Use a header bar when running in GNOME as this is the common style used
--  // by applications and is the setup most users will be using (e.g. Ubuntu
--  // desktop).
--  // If running on X and not using GNOME then just use a traditional title bar
--  // in case the window manager does more exotic layout, e.g. tiling.
--  // If running on Wayland assume the header bar will work (may need changing
--  // if future cases occur).
--  gboolean use_header_bar = TRUE;
--#ifdef GDK_WINDOWING_X11
--  GdkScreen* screen = gtk_window_get_screen(window);
--  if (GDK_IS_X11_SCREEN(screen)) {
--    const gchar* wm_name = gdk_x11_screen_get_window_manager_name(screen);
--    if (g_strcmp0(wm_name, "GNOME Shell") != 0) {
--      use_header_bar = FALSE;
--    }
--  }
--#endif
--  if (use_header_bar) {
--    GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
--    gtk_widget_show(GTK_WIDGET(header_bar));
--    gtk_header_bar_set_title(header_bar, "{{projectName}}");
--    gtk_header_bar_set_show_close_button(header_bar, TRUE);
--    gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
--  } else {
--    gtk_window_set_title(window, "{{projectName}}");
--  }
+-  gtk_window_set_default_size(window, 1280, 720);
 +static void my_application_activate(GApplication *application) {
-+
+ 
+-  // If you want to use a header bar, uncomment the following lines.
+-  // Header bars are commonly used in GNOME based desktop environments and
+-  // allow additional widgets to be added to the title bar.
+-  // See https://docs.gtk.org/gtk3/class.HeaderBar.html
+-  // GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
+-  // gtk_widget_show(GTK_WIDGET(header_bar));
+-  // gtk_header_bar_set_show_close_button(header_bar, TRUE);
+-  // gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
 +  g_application_hold(application);
  
--  gtk_window_set_default_size(window, 1280, 720);
+-  gtk_window_set_title(window, "{{projectName}}");
 +  MyApplication *self = MY_APPLICATION(application);
  
    g_autoptr(FlDartProject) project = fl_dart_project_new();
@@ -627,33 +613,48 @@ index 3cc05eb2349..00000000000
 -  }
 -}
 diff --git a/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl b/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl
-index 04a7a3d2298..adab2886ba0 100644
+index 72a83a2da7a..adab2886ba0 100644
 --- a/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl
 +++ b/packages/flutter_tools/templates/app/macos.tmpl/RunnerTests/RunnerTests.swift.tmpl
-@@ -17,21 +17,6 @@ import XCTest
+@@ -1,6 +1,6 @@
+ import Cocoa
+ import FlutterMacOS
+-import Testing
++import XCTest
+ {{#withPlatformChannelPluginHook}}
  
- class RunnerTests: XCTestCase {
+ {{#withSwiftPackageManager}}
+@@ -12,25 +12,15 @@ import Testing
+ 
+ // This demonstrates a simple unit test of the Swift portion of this plugin's implementation.
+ //
+-// See https://developer.apple.com/xcode/swift-testing/ for more information about using
+-// Swift Testing.
++// See https://developer.apple.com/documentation/xctest for more information about using XCTest.
+ {{/withPlatformChannelPluginHook}}
+ 
+-struct RunnerTests {
++class RunnerTests: XCTestCase {
  
 -{{#withPlatformChannelPluginHook}}
--  func testGetPlatformVersion() {
+-  @Test func getPlatformVersionSucceeds() throws {
 -    let plugin = {{pluginClass}}()
 -
--    let call = FlutterMethodCall(methodName: "getPlatformVersion", arguments: [])
--
--    let resultExpectation = expectation(description: "result block must be called.")
--    plugin.handle(call) { result in
--      XCTAssertEqual(result as! String,
--                     "macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
--      resultExpectation.fulfill()
--    }
--    waitForExpectations(timeout: 1)
+-    let result = try plugin.getPlatformVersion()
+-    #expect(result == "macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
 -  }
 -{{/withPlatformChannelPluginHook}}
  {{^withPlatformChannelPluginHook}}
    func testExample() {
      // If you add code to the Runner application, consider adding tests here.
+-    // See https://developer.apple.com/xcode/swift-testing/ for more information about using
+-    // Swift Testing.
++    // See https://developer.apple.com/documentation/xctest for more information about using XCTest.
+   }
+ {{/withPlatformChannelPluginHook}}
+ 
 diff --git a/packages/flutter_tools/templates/app/pubspec.yaml.tmpl b/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
-index 10509c18290..63cc5249192 100644
+index e31456a5eb0..63cc5249192 100644
 --- a/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
 +++ b/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
 @@ -1,6 +1,5 @@
@@ -663,8 +664,11 @@ index 10509c18290..63cc5249192 100644
  publish_to: 'none'
  version: 0.1.0+1
  
-@@ -12,115 +11,4 @@ dependencies:
+@@ -10,119 +9,6 @@ environment:
+ dependencies:
+   flutter:
      sdk: flutter
+-  material_ui: ^1.1.0
  
  dev_dependencies:
 -  flutter_test:
@@ -707,6 +711,7 @@ index 10509c18290..63cc5249192 100644
 -dependencies:
 -  flutter:
 -    sdk: flutter
+-  material_ui: ^1.1.0
 -{{#withPluginHook}}
 -
 -  {{pluginProjectName}}:
@@ -1343,6 +1348,7 @@ index e901dde684e..00000000000
 -};
 -
 -#endif  // RUNNER_WIN32_WINDOW_H_
+
+
 -- 
 2.51.2
-

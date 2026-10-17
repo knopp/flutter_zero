@@ -10,22 +10,44 @@ tree font into the bundle and crashed when it was missing) is removed
 entirely.
 
 ---
+ packages/flutter_tools/lib/src/build_system/targets/web.dart | 65 ++++++-----------------------------------------------------------
+ 1 file changed, 6 insertions(+), 59 deletions(-)
+
 diff --git a/packages/flutter_tools/lib/src/build_system/targets/web.dart b/packages/flutter_tools/lib/src/build_system/targets/web.dart
-index 9f5a78f4de3..12ee35e110b 100644
+index 30805519827..6a91f593b59 100644
 --- a/packages/flutter_tools/lib/src/build_system/targets/web.dart
 +++ b/packages/flutter_tools/lib/src/build_system/targets/web.dart
-@@ -684,9 +684,8 @@ class WebReleaseBundle extends Target {
+@@ -1229,7 +1229,6 @@ class WebReleaseBundle extends Target {
        targetPlatform: TargetPlatform.web_javascript,
        buildMode: buildMode,
      );
 -    final Depfile bundledDepfile = _bundleLocalRobotoFallback(environment, depfile);
      final DepfileService depfileService = environment.depFileService;
--    depfileService.writeToFile(bundledDepfile, environment.buildDir.childFile('flutter_assets.d'));
-+    depfileService.writeToFile(depfile, environment.buildDir.childFile('flutter_assets.d'));
  
-     final Directory webResources = environment.projectDir.childDirectory('web');
-     final List<File> inputResourceFiles = webResources
-@@ -731,61 +730,9 @@ class WebReleaseBundle extends Target {
+     final bool webContentHash = compileTargets.any(
+@@ -1238,18 +1237,18 @@ class WebReleaseBundle extends Target {
+     if (webContentHash) {
+       final WebAssetHashResult hashResult = hashWebAssets(outputDirectory);
+       final Map<String, File> renamedOutputs = hashResult.renamedFiles;
+-      final List<File> updatedOutputs = bundledDepfile.outputs.map((File f) {
++      final List<File> updatedOutputs = depfile.outputs.map((File f) {
+         final String normalizedPath = environment.fileSystem.path.normalize(f.path);
+         return renamedOutputs[normalizedPath] ?? renamedOutputs[f.path] ?? f;
+       }).toList();
+       depfileService.writeToFile(
+-        Depfile(bundledDepfile.inputs, updatedOutputs),
++        Depfile(depfile.inputs, updatedOutputs),
+         environment.buildDir.childFile('flutter_assets.d'),
+       );
+       injectManifestBuildConfig(environment.outputDir, hashResult);
+     } else {
+       depfileService.writeToFile(
+-        bundledDepfile,
++        depfile,
+         environment.buildDir.childFile('flutter_assets.d'),
+       );
+     }
+@@ -1297,61 +1296,9 @@ class WebReleaseBundle extends Target {
      environment.outputDir.childFile('version.json').writeAsStringSync(jsonEncode(versionInfo));
    }
  
@@ -42,7 +64,7 @@ index 9f5a78f4de3..12ee35e110b 100644
 -        : <Object?>[];
 -
 -    final bool hasRobotoFamily = manifestJson.any((Object? entry) {
--      return entry is Map<String, dynamic> && entry['family'] == _kBundledFallbackRobotoFamily;
+-      return entry is Map<String, Object?> && entry['family'] == _kBundledFallbackRobotoFamily;
 -    });
 -    if (hasRobotoFamily) {
 -      return depfile;
@@ -90,3 +112,6 @@ index 9f5a78f4de3..12ee35e110b 100644
  }
  
  class WebTemplatedFiles extends Target {
+
+-- 
+2.51.2

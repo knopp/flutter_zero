@@ -22,6 +22,8 @@ class FlutterWindowsEngineBuilder {
 
   void SetDartEntrypoint(std::string entrypoint);
 
+  void SetAotLibraryPath(std::wstring path);
+
   void AddDartEntrypointArgument(std::string arg);
 
   void SetSwitches(std::vector<std::string> switches);
@@ -35,6 +37,7 @@ class FlutterWindowsEngineBuilder {
   WindowsTestContext& context_;
   FlutterDesktopEngineProperties properties_ = {};
   std::string dart_entrypoint_;
+  std::wstring aot_library_path_;
   std::vector<std::string> dart_entrypoint_arguments_;
   std::vector<std::string> switches_;
   std::shared_ptr<WindowsProcTable> windows_proc_table_;

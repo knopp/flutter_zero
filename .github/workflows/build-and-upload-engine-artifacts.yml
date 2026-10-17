@@ -2471,6 +2471,16 @@ jobs:
           python flutter/testing/run_tests.py \
             --variant ci/host_debug \
             --type engine \
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_debug -type l -lname "/*" -delete || true
+          tar -cvf windows_host_debug.tar engine/src/out/ci/host_debug
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_host_debug-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_host_debug.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_debug/zip_archives/windows-x64/artifacts.zip
         run: |
           cd engine/src/out/ci/host_debug/zip_archives/windows-x64
@@ -2590,6 +2600,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_profile
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_profile -type l -lname "/*" -delete || true
+          tar -cvf windows_host_profile.tar engine/src/out/ci/host_profile
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_host_profile-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_host_profile.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_profile/zip_archives/windows-x64-profile/windows-x64-flutter.zip
         run: |
           cd engine/src/out/ci/host_profile/zip_archives/windows-x64-profile
@@ -2659,6 +2679,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_release
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_release -type l -lname "/*" -delete || true
+          tar -cvf windows_host_release.tar engine/src/out/ci/host_release
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_host_release-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_host_release.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_release/zip_archives/windows-x64-release/windows-x64-flutter.zip
         run: |
           cd engine/src/out/ci/host_release/zip_archives/windows-x64-release
@@ -2728,6 +2758,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_debug_arm64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_debug_arm64 -type l -lname "/*" -delete || true
+          tar -cvf windows_host_debug_arm64.tar engine/src/out/ci/host_debug_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_host_debug_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_host_debug_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_debug_arm64/zip_archives/windows-arm64/artifacts.zip
         run: |
           cd engine/src/out/ci/host_debug_arm64/zip_archives/windows-arm64
@@ -2847,6 +2887,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_profile_arm64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_profile_arm64 -type l -lname "/*" -delete || true
+          tar -cvf windows_host_profile_arm64.tar engine/src/out/ci/host_profile_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_host_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_host_profile_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_profile_arm64/zip_archives/windows-arm64-profile/windows-arm64-flutter.zip
         run: |
           cd engine/src/out/ci/host_profile_arm64/zip_archives/windows-arm64-profile
@@ -2916,6 +2966,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\host_release_arm64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_release_arm64 -type l -lname "/*" -delete || true
+          tar -cvf windows_host_release_arm64.tar engine/src/out/ci/host_release_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_host_release_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_host_release_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_release_arm64/zip_archives/windows-arm64-release/windows-arm64-flutter.zip
         run: |
           cd engine/src/out/ci/host_release_arm64/zip_archives/windows-arm64-release
@@ -3364,6 +3424,16 @@ jobs:
             --variant ci/host_debug_desktop \
             --type engine \
             --engine-capture-core-dump
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_debug_desktop -type l -lname "/*" -delete || true
+          tar -cvf linux_host_debug_desktop.tar engine/src/out/ci/host_debug_desktop
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux_host_debug_desktop-${{ steps.engine_content_hash.outputs.value }}
+          path: linux_host_debug_desktop.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_debug_desktop/zip_archives/linux-x64-debug/linux-x64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/host_debug_desktop/zip_archives/linux-x64-debug
@@ -3439,6 +3509,16 @@ jobs:
             --variant ci/host_profile_desktop \
             --type engine \
             --engine-capture-core-dump
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_profile_desktop -type l -lname "/*" -delete || true
+          tar -cvf linux_host_profile_desktop.tar engine/src/out/ci/host_profile_desktop
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux_host_profile_desktop-${{ steps.engine_content_hash.outputs.value }}
+          path: linux_host_profile_desktop.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_profile_desktop/zip_archives/linux-x64-profile/linux-x64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/host_profile_desktop/zip_archives/linux-x64-profile
@@ -3514,6 +3594,16 @@ jobs:
             --variant ci/host_release_desktop \
             --type engine \
             --engine-capture-core-dump
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/host_release_desktop -type l -lname "/*" -delete || true
+          tar -cvf linux_host_release_desktop.tar engine/src/out/ci/host_release_desktop
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux_host_release_desktop-${{ steps.engine_content_hash.outputs.value }}
+          path: linux_host_release_desktop.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/host_release_desktop/zip_archives/linux-x64-release/linux-x64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/host_release_desktop/zip_archives/linux-x64-release
@@ -3589,6 +3679,16 @@ jobs:
             --variant ci/linux_profile_arm64 \
             --type engine \
             --engine-capture-core-dump
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/linux_profile_arm64 -type l -lname "/*" -delete || true
+          tar -cvf linux_profile_arm64.tar engine/src/out/ci/linux_profile_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: linux_profile_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/linux_profile_arm64/zip_archives/linux-arm64-profile/linux-arm64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/linux_profile_arm64/zip_archives/linux-arm64-profile
@@ -3664,6 +3764,16 @@ jobs:
             --variant ci/linux_debug_arm64 \
             --type engine \
             --engine-capture-core-dump
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/linux_debug_arm64 -type l -lname "/*" -delete || true
+          tar -cvf linux_debug_arm64.tar engine/src/out/ci/linux_debug_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux_debug_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: linux_debug_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/linux_debug_arm64/zip_archives/linux-arm64/artifacts.zip
         run: |
           cd engine/src/out/ci/linux_debug_arm64/zip_archives/linux-arm64
@@ -3779,6 +3889,16 @@ jobs:
             --variant ci/linux_release_arm64 \
             --type engine \
             --engine-capture-core-dump
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/linux_release_arm64 -type l -lname "/*" -delete || true
+          tar -cvf linux_release_arm64.tar engine/src/out/ci/linux_release_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux_release_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: linux_release_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/linux_release_arm64/zip_archives/linux-arm64-release/linux-arm64-flutter-gtk.zip
         run: |
           cd engine/src/out/ci/linux_release_arm64/zip_archives/linux-arm64-release
@@ -3848,6 +3968,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_profile
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_profile -type l -lname "/*" -delete || true
+          tar -cvf windows_android_profile.tar engine/src/out/ci/android_profile
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_android_profile-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_android_profile.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile/zip_archives/android-arm-profile/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_profile/zip_archives/android-arm-profile
@@ -3917,6 +4047,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_profile_arm64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_profile_arm64 -type l -lname "/*" -delete || true
+          tar -cvf windows_android_profile_arm64.tar engine/src/out/ci/android_profile_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_android_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_android_profile_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile
@@ -3986,6 +4126,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_profile_x64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_profile_x64 -type l -lname "/*" -delete || true
+          tar -cvf windows_android_profile_x64.tar engine/src/out/ci/android_profile_x64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_android_profile_x64-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_android_profile_x64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile
@@ -4055,6 +4205,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_release
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_release -type l -lname "/*" -delete || true
+          tar -cvf windows_android_release.tar engine/src/out/ci/android_release
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_android_release-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_android_release.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_release/zip_archives/android-arm-release/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_release/zip_archives/android-arm-release
@@ -4124,6 +4284,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_release_arm64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_release_arm64 -type l -lname "/*" -delete || true
+          tar -cvf windows_android_release_arm64.tar engine/src/out/ci/android_release_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_android_release_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_android_release_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release
@@ -4193,6 +4363,16 @@ jobs:
         run: |
           cd engine\src
           flutter\bin\et.bat build --config ci\android_release_x64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_release_x64 -type l -lname "/*" -delete || true
+          tar -cvf windows_android_release_x64.tar engine/src/out/ci/android_release_x64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows_android_release_x64-${{ steps.engine_content_hash.outputs.value }}
+          path: windows_android_release_x64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_x64/zip_archives/android-x64-release/windows-x64.zip
         run: |
           cd engine/src/out/ci/android_release_x64/zip_archives/android-x64-release
@@ -4261,6 +4441,16 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_profile
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_profile -type l -lname "/*" -delete || true
+          tar -cvf mac_android_profile.tar engine/src/out/ci/android_profile
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-mac_android_profile-${{ steps.engine_content_hash.outputs.value }}
+          path: mac_android_profile.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile/zip_archives/android-arm-profile/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_profile/zip_archives/android-arm-profile
@@ -4329,6 +4519,16 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_profile_arm64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_profile_arm64 -type l -lname "/*" -delete || true
+          tar -cvf mac_android_profile_arm64.tar engine/src/out/ci/android_profile_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-mac_android_profile_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: mac_android_profile_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_arm64/zip_archives/android-arm64-profile
@@ -4397,6 +4597,16 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_profile_x64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_profile_x64 -type l -lname "/*" -delete || true
+          tar -cvf mac_android_profile_x64.tar engine/src/out/ci/android_profile_x64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-mac_android_profile_x64-${{ steps.engine_content_hash.outputs.value }}
+          path: mac_android_profile_x64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_profile_x64/zip_archives/android-x64-profile
@@ -4465,6 +4675,16 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_release
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_release -type l -lname "/*" -delete || true
+          tar -cvf mac_android_release.tar engine/src/out/ci/android_release
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-mac_android_release-${{ steps.engine_content_hash.outputs.value }}
+          path: mac_android_release.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_release/zip_archives/android-arm-release/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_release/zip_archives/android-arm-release
@@ -4533,6 +4753,16 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_release_arm64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_release_arm64 -type l -lname "/*" -delete || true
+          tar -cvf mac_android_release_arm64.tar engine/src/out/ci/android_release_arm64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-mac_android_release_arm64-${{ steps.engine_content_hash.outputs.value }}
+          path: mac_android_release_arm64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_release_arm64/zip_archives/android-arm64-release
@@ -4601,6 +4831,16 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/android_release_x64
+      - name: Tar build files
+        run: |
+          find engine/src/out/ci/android_release_x64 -type l -lname "/*" -delete || true
+          tar -cvf mac_android_release_x64.tar engine/src/out/ci/android_release_x64
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-mac_android_release_x64-${{ steps.engine_content_hash.outputs.value }}
+          path: mac_android_release_x64.tar
+          retention-days: 1
       - name: Tar engine/src/out/ci/android_release_x64/zip_archives/android-x64-release/darwin-x64.zip
         run: |
           cd engine/src/out/ci/android_release_x64/zip_archives/android-x64-release
@@ -6390,6 +6630,16 @@ jobs:
         run: |
           cd engine/src
           ./flutter/bin/et build --config ci/wasm_release
+      - name: Tar build files
+        run: |
+          find engine/src/out/wasm_release -type l -lname "/*" -delete || true
+          tar -cvf linux_wasm_release.tar engine/src/out/wasm_release
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux_wasm_release-${{ steps.engine_content_hash.outputs.value }}
+          path: linux_wasm_release.tar
+          retention-days: 1
       - name: Tar engine/src/out/wasm_release/zip_archives/flutter-web-sdk.zip
         run: |
           cd engine/src/out/wasm_release/zip_archives
@@ -6410,6 +6660,10 @@ jobs:
       - guard
     if: ${{ needs.guard.outputs.should_run == 'true' }}
     steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          path: ''
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
@@ -6463,6 +6717,10 @@ jobs:
       - guard
     if: ${{ needs.guard.outputs.should_run == 'true' }}
     steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          path: ''
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
@@ -8482,7 +8740,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-76/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-arm-release/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8518,7 +8776,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-80/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-arm64-release/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8563,7 +8821,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-85/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-arm64-profile/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8608,7 +8866,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-90/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-x64-profile/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8653,7 +8911,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-95/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-x64-release/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8698,7 +8956,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-100/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-riscv64-profile/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8743,7 +9001,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-105/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-riscv64-release/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8788,7 +9046,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-110/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-arm/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8824,7 +9082,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-114/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish /sky_engine.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8878,7 +9136,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-120/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-x86/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8914,7 +9172,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-124/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-x64/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8950,7 +9208,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-128/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish android-riscv64/artifacts.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:
@@ -8986,7 +9244,7 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: ${{ steps.r2_target.outputs.bucket }}
           source-dir: artifact-132/
-          destination-dir: ${{ steps.r2_target.outputs.prefix }}
+          destination-dir: ${{ steps.r2_target.outputs.prefix }}./
       - name: Publish /flutter-web-sdk.zip
         uses: ryand56/r2-upload-action@b801a390acbdeb034c5e684ff5e1361c06639e7c
         with:

@@ -6,6 +6,7 @@ import 'package:flutter_tools/src/base/io.dart';
 import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/linux/linux_doctor.dart';
+import 'package:flutter_tools_core/flutter_tools_core.dart';
 
 import '../../src/common.dart';
 import '../../src/fake_process_manager.dart';
@@ -60,9 +61,13 @@ FakeCommand _libraryCheckCommand(String library, {bool exists = true}) {
   );
 }
 
-// Commands that give positive replies for all the GLib library pkg-config queries.
+// Commands that give positive replies for all the GTK library pkg-config queries.
 List<FakeCommand> _gtkLibrariesPresentCommands() {
-  return <FakeCommand>[_libraryCheckCommand('glib-2.0'), _libraryCheckCommand('gio-2.0')];
+  return <FakeCommand>[
+    _libraryCheckCommand('gtk+-3.0'),
+    _libraryCheckCommand('glib-2.0'),
+    _libraryCheckCommand('gio-2.0'),
+  ];
 }
 
 // A command that will return typical-looking 'eglinfo' output
@@ -165,11 +170,12 @@ FakeCommand _eglinfoMissingCommand() {
   );
 }
 
-// Commands that give some failures for the GLib library pkg-config queries.
+// Commands that give some failures for the GTK library pkg-config queries.
 List<FakeCommand> _gtkLibrariesMissingCommands() {
   return <FakeCommand>[
+    _libraryCheckCommand('gtk+-3.0'),
     _libraryCheckCommand('glib-2.0', exists: false),
-    // No more entries, since the first missing library stops the
+    // No more entries, since the first missing GTK library stops the
     // checks.
   ];
 }

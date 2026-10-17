@@ -1,13 +1,13 @@
 #ifndef FLUTTER_MY_APPLICATION_H_
 #define FLUTTER_MY_APPLICATION_H_
 
-#include <gio/gio.h>
+#include <gtk/gtk.h>
 
 G_DECLARE_FINAL_TYPE(MyApplication,
                      my_application,
                      MY,
                      APPLICATION,
-                     GApplication)
+                     GtkApplication)
 
 /**
  * my_application_new:

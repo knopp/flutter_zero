@@ -29,6 +29,7 @@ list(APPEND FLUTTER_LIBRARY_HEADERS
   "flutter_windows.h"
   "flutter_messenger.h"
   "flutter_plugin_registrar.h"
+  "flutter_texture_registrar.h"
 )
 list(TRANSFORM FLUTTER_LIBRARY_HEADERS PREPEND "${EPHEMERAL_DIR}/")
 add_library(flutter INTERFACE)
@@ -50,6 +51,7 @@ list(APPEND CPP_WRAPPER_SOURCES_PLUGIN
 list(TRANSFORM CPP_WRAPPER_SOURCES_PLUGIN PREPEND "${WRAPPER_ROOT}/")
 list(APPEND CPP_WRAPPER_SOURCES_APP
   "flutter_engine.cc"
+  "flutter_view_controller.cc"
 )
 list(TRANSFORM CPP_WRAPPER_SOURCES_APP PREPEND "${WRAPPER_ROOT}/")
 

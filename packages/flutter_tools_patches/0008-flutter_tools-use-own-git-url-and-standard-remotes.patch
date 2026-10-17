@@ -1,0 +1,82 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matej Knopp <matej.knopp@gmail.com>
+Date: Sun, 18 Oct 2026 00:20:59 +0200
+Subject: [PATCH] Use our own git url and standard remotes for version resolution
+
+---
+ packages/flutter_tools/lib/src/version.dart        | 26 ++++++++++++----------
+ .../test/general.shard/version_test.dart           |  2 +-
+ 2 files changed, 15 insertions(+), 13 deletions(-)
+diff --git a/packages/flutter_tools/lib/src/version.dart b/packages/flutter_tools/lib/src/version.dart
+index 5e7bd837b84..0a64377653e 100644
+--- a/packages/flutter_tools/lib/src/version.dart
++++ b/packages/flutter_tools/lib/src/version.dart
+@@ -20,6 +20,17 @@ import 'globals.dart' as globals;
+ /// The default version when a version could not be determined.
+ const kUnknownFrameworkVersion = '0.0.0-unknown';
+ 
++const String kFrameworkGitUrl = 'https://github.com/knopp/flutter_zero.git';
++
++const List<String> kStandardGitRemotes = <String>[
++  'https://github.com/knopp/flutter_zero.git',
++  'git@github.com:knopp/flutter_zero.git',
++  'ssh://git@github.com/knopp/flutter_zero.git',
++  'https://github.com/flutter/flutter.git',
++  'git@github.com:flutter/flutter.git',
++  'ssh://git@github.com/flutter/flutter.git',
++];
++
+ /// A git shortcut for the branch that is being tracked by the current one.
+ ///
+ /// See `man gitrevisions` for more information.
+@@ -873,11 +884,7 @@ class VersionUpstreamValidator {
+   }
+ 
+   // The predefined list of remotes that are considered to be standard.
+-  static final _standardRemotes = [
+-    'https://github.com/flutter/flutter.git',
+-    'git@github.com:flutter/flutter.git',
+-    'ssh://git@github.com/flutter/flutter.git',
+-  ];
++  static final _standardRemotes = kStandardGitRemotes;
+ 
+   // Strips ".git" suffix from a given string, preferably an url.
+   // For example, changes 'https://github.com/flutter/flutter.git' to 'https://github.com/flutter/flutter'.
+@@ -1112,8 +1119,7 @@ class GitTagVersion {
+           }
+         }
+       } else {
+-        final String flutterGit =
+-            platform.environment['FLUTTER_GIT_URL'] ?? 'https://github.com/flutter/flutter.git';
++        final String flutterGit = platform.environment['FLUTTER_GIT_URL'] ?? kFrameworkGitUrl;
+         git.runSync(['fetch', flutterGit, '--tags', '-f'], workingDirectory: workingDirectory);
+       }
+     }
+@@ -1493,11 +1499,7 @@ bool _isStandardRemote(String remote) {
+   if (customGitUrl != null && VersionUpstreamValidator.stripDotGit(customGitUrl) == sanitized) {
+     return true;
+   }
+-  for (final standard in const <String>[
+-    'https://github.com/flutter/flutter.git',
+-    'git@github.com:flutter/flutter.git',
+-    'ssh://git@github.com/flutter/flutter.git',
+-  ]) {
++  for (final standard in kStandardGitRemotes) {
+     if (VersionUpstreamValidator.stripDotGit(standard) == sanitized) {
+       return true;
+     }
+diff --git a/packages/flutter_tools/test/general.shard/version_test.dart b/packages/flutter_tools/test/general.shard/version_test.dart
+index 5e695e7673e..c1300687e63 100644
+--- a/packages/flutter_tools/test/general.shard/version_test.dart
++++ b/packages/flutter_tools/test/general.shard/version_test.dart
+@@ -1647,7 +1647,7 @@ void main() {
+         stdout: 'master',
+       ),
+       const FakeCommand(
+-        command: <String>['git', 'fetch', 'https://github.com/flutter/flutter.git', '--tags', '-f'],
++        command: <String>['git', 'fetch', 'https://github.com/knopp/flutter_zero.git', '--tags', '-f'],
+       ),
+       const FakeCommand(command: <String>['git', 'tag', '--points-at', 'HEAD']),
+       ...mockGitTagHistory(
+-- 
+2.51.2

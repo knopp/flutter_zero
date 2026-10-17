@@ -1647,7 +1647,7 @@ void main() {
         stdout: 'master',
       ),
       const FakeCommand(
-        command: <String>['git', 'fetch', 'https://github.com/flutter/flutter.git', '--tags', '-f'],
+        command: <String>['git', 'fetch', 'https://github.com/knopp/flutter_zero.git', '--tags', '-f'],
       ),
       const FakeCommand(command: <String>['git', 'tag', '--points-at', 'HEAD']),
       ...mockGitTagHistory(

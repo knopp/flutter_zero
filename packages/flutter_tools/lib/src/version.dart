@@ -20,6 +20,17 @@ import 'globals.dart' as globals;
 /// The default version when a version could not be determined.
 const kUnknownFrameworkVersion = '0.0.0-unknown';
 
+const String kFrameworkGitUrl = 'https://github.com/knopp/flutter_zero.git';
+
+const List<String> kStandardGitRemotes = <String>[
+  'https://github.com/knopp/flutter_zero.git',
+  'git@github.com:knopp/flutter_zero.git',
+  'ssh://git@github.com/knopp/flutter_zero.git',
+  'https://github.com/flutter/flutter.git',
+  'git@github.com:flutter/flutter.git',
+  'ssh://git@github.com/flutter/flutter.git',
+];
+
 /// A git shortcut for the branch that is being tracked by the current one.
 ///
 /// See `man gitrevisions` for more information.
@@ -873,11 +884,7 @@ class VersionUpstreamValidator {
   }
 
   // The predefined list of remotes that are considered to be standard.
-  static final _standardRemotes = [
-    'https://github.com/flutter/flutter.git',
-    'git@github.com:flutter/flutter.git',
-    'ssh://git@github.com/flutter/flutter.git',
-  ];
+  static final _standardRemotes = kStandardGitRemotes;
 
   // Strips ".git" suffix from a given string, preferably an url.
   // For example, changes 'https://github.com/flutter/flutter.git' to 'https://github.com/flutter/flutter'.
@@ -1112,8 +1119,7 @@ class GitTagVersion {
           }
         }
       } else {
-        final String flutterGit =
-            platform.environment['FLUTTER_GIT_URL'] ?? 'https://github.com/flutter/flutter.git';
+        final String flutterGit = platform.environment['FLUTTER_GIT_URL'] ?? kFrameworkGitUrl;
         git.runSync(['fetch', flutterGit, '--tags', '-f'], workingDirectory: workingDirectory);
       }
     }
@@ -1493,11 +1499,7 @@ bool _isStandardRemote(String remote) {
   if (customGitUrl != null && VersionUpstreamValidator.stripDotGit(customGitUrl) == sanitized) {
     return true;
   }
-  for (final standard in const <String>[
-    'https://github.com/flutter/flutter.git',
-    'git@github.com:flutter/flutter.git',
-    'ssh://git@github.com/flutter/flutter.git',
-  ]) {
+  for (final standard in kStandardGitRemotes) {
     if (VersionUpstreamValidator.stripDotGit(standard) == sanitized) {
       return true;
     }

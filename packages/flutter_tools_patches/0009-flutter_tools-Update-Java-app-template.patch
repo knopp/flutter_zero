@@ -1,0 +1,95 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matej Knopp <matej.knopp@gmail.com>
+Date: Sun, 1 Nov 2026 23:33:42 +0100
+Subject: [PATCH] flutter_tools: Update Java app template for the headless engine.
+
+The Java variant of the app template still used FlutterActivity, which
+flutter_zero does not have, and had no Application class even though
+the shared AndroidManifest.xml references .Application. Port the Kotlin
+template: a headless engine started in Application and a plain Activity.
+
+---
+ .../java/androidIdentifier/Application.java.tmpl   | 49 ++++++++++++++++++++++
+ .../java/androidIdentifier/MainActivity.java.tmpl  |  4 +-
+ .../flutter_tools/templates/template_manifest.json |  1 +
+ 3 files changed, 52 insertions(+), 2 deletions(-)
+diff --git a/packages/flutter_tools/templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/Application.java.tmpl b/packages/flutter_tools/templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/Application.java.tmpl
+new file mode 100644
+index 00000000000..87133e1face
+--- /dev/null
++++ b/packages/flutter_tools/templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/Application.java.tmpl
+@@ -0,0 +1,49 @@
++package {{androidIdentifier}};
++
++import io.flutter.FlutterInjector;
++import io.flutter.embedding.engine.FlutterEngine;
++import io.flutter.embedding.engine.FlutterEngineCache;
++import io.flutter.embedding.engine.dart.DartExecutor;
++
++public class Application extends android.app.Application {
++
++    // Use a constant key so Activities/Services can fetch the engine later.
++    public static final String ENGINE_ID = "headless_engine";
++
++    private FlutterEngine engine;
++
++    @Override
++    public void onCreate() {
++        super.onCreate();
++
++        // Ensure Flutter is initialized (loads engine resources, etc.)
++        // Usually automatic, but doing it explicitly makes startup behavior predictable.
++        FlutterInjector.instance().flutterLoader().startInitialization(this);
++        FlutterInjector.instance().flutterLoader().ensureInitializationComplete(this, null);
++
++        // Create a FlutterEngine not tied to any Activity.
++        FlutterEngine flutterEngine = new FlutterEngine(this);
++
++        // Start executing Dart code. This runs the "main()" of your Flutter app by default.
++        DartExecutor.DartEntrypoint entrypoint = DartExecutor.DartEntrypoint.createDefault();
++        flutterEngine.getDartExecutor().executeDartEntrypoint(entrypoint);
++
++        // Optionally: register MethodChannels / EventChannels here, once the engine exists.
++        // Example: setupChannels(flutterEngine);
++
++        // Cache it so other components can reuse it without recreating.
++        FlutterEngineCache.getInstance().put(ENGINE_ID, flutterEngine);
++
++        engine = flutterEngine;
++    }
++
++    @Override
++    public void onTerminate() {
++        // onTerminate is not reliable in production, but safe to keep for emulators/tests.
++        if (engine != null) {
++            engine.destroy();
++            engine = null;
++        }
++        super.onTerminate();
++    }
++}
+diff --git a/packages/flutter_tools/templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/MainActivity.java.tmpl b/packages/flutter_tools/templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/MainActivity.java.tmpl
+index ef67a3dd9b6..a21617b6009 100644
+--- a/packages/flutter_tools/templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/MainActivity.java.tmpl
++++ b/packages/flutter_tools/templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/MainActivity.java.tmpl
+@@ -1,6 +1,6 @@
+ package {{androidIdentifier}};
+ 
+-import io.flutter.embedding.android.FlutterActivity;
++import android.app.Activity;
+ 
+-public class MainActivity extends FlutterActivity {
++public class MainActivity extends Activity {
+ }
+diff --git a/packages/flutter_tools/templates/template_manifest.json b/packages/flutter_tools/templates/template_manifest.json
+index fcfd972aef0..e6865ea70d4 100644
+--- a/packages/flutter_tools/templates/template_manifest.json
++++ b/packages/flutter_tools/templates/template_manifest.json
+@@ -23,6 +23,7 @@
+     "templates/app/.metadata.tmpl",
+     "templates/app/analysis_options.yaml.tmpl",
+     "templates/app/android-java.tmpl/app/build.gradle.kts.tmpl",
++    "templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/Application.java.tmpl",
+     "templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/MainActivity.java.tmpl",
+     "templates/app/android-java.tmpl/build.gradle.kts.tmpl",
+     "templates/app/android-java.tmpl/projectName_android.iml.tmpl",

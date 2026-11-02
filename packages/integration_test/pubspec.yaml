@@ -1,0 +1,11 @@
+name: integration_test
+description: >-
+  Runs integration tests on a device with `flutter test integration_test`.
+  A minimal version of Flutter's package:integration_test.
+version: 0.0.1
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: ^3.11.0-169.0.dev

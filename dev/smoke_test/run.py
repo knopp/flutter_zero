@@ -379,7 +379,9 @@ class ToolConsole:
     """Interprets one daemon-protocol line; every other line is noise."""
     try:
       payload = json.loads(line)  # daemon frames are single-element arrays
-      frame = payload[0] if isinstance(payload, list) else payload
+      # The tool also emits an empty `[]` frame (e.g. after "App failed to
+      # start"); it is noise, like any other non-dict frame.
+      frame = payload[0] if isinstance(payload, list) and payload else payload
     except ValueError:
       return
     if not isinstance(frame, dict) or 'event' not in frame:

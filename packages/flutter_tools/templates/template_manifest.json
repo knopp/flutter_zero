@@ -23,6 +23,7 @@
     "templates/app/.metadata.tmpl",
     "templates/app/analysis_options.yaml.tmpl",
     "templates/app/android-java.tmpl/app/build.gradle.kts.tmpl",
+    "templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/Application.java.tmpl",
     "templates/app/android-java.tmpl/app/src/main/java/androidIdentifier/MainActivity.java.tmpl",
     "templates/app/android-java.tmpl/build.gradle.kts.tmpl",
     "templates/app/android-java.tmpl/projectName_android.iml.tmpl",

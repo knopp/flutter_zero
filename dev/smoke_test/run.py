@@ -6,7 +6,8 @@ local engine and asserts on the output it prints: launch, hot reload (after
 modifying the source), hot restart, quit.
 
     python3 dev/smoke_test/run.py --device [macos|windows|linux|ios|android] \
-        --engine ci/host_debug [--host-engine ci/host_engine]
+        --engine ci/host_debug [--host-engine ci/host_engine] \
+        [--android-language kotlin|java]
 
 iOS simulators and Android emulators are booted when needed and closed after
 the run.
@@ -78,7 +79,8 @@ def write_app_file(project_dir, version):
   return main_path
 
 
-def create_project(workspace, platforms, engine, host_engine):
+def create_project(workspace, platforms, engine, host_engine,
+                   android_language):
   log('creating sample project with the in-tree flutter tool')
   os.makedirs(workspace, exist_ok=True)
   # Create with the local engine configured as well, so that the tool caches
@@ -91,6 +93,7 @@ def create_project(workspace, platforms, engine, host_engine):
   ]
   code, output = run_tool_sync(
       ['create', '--platforms=%s' % platforms, PROJECT_NAME,
+       '--android-language=%s' % android_language,
        '--suppress-analytics', *local_engines],
       cwd=workspace)
   if code != 0:
@@ -520,6 +523,10 @@ def main():
       help='name of the local host engine the tool runs against '
            '(default: same as --engine).')
   parser.add_argument(
+      '--android-language', default='kotlin', choices=['kotlin', 'java'],
+      help='language of the Android host app template the sample project '
+           'is created from (android device only).')
+  parser.add_argument(
       '--workspace', default=None,
       help='where the sample project is created and left behind.')
   args = parser.parse_args()
@@ -539,7 +546,7 @@ def main():
                else tempfile.mkdtemp(prefix='flutter_zero_smoke_test_'))
   try:
     project_dir = create_project(workspace, platforms, args.engine,
-                                 args.host_engine)
+                                 args.host_engine, args.android_language)
     write_app_file(project_dir, 'A')
     if args.mode == 'debug':
       run_debug_flow(project_dir, device, args.engine, args.host_engine)

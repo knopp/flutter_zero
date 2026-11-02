@@ -70,7 +70,7 @@ jobs:
           exit 1
 
   smoke:
-    name: Smoke (${{ matrix.device }} ${{ matrix.mode }})
+    name: Smoke (${{ matrix.device }} ${{ matrix.mode }}${{ matrix.android_language && format(' {0}', matrix.android_language) || '' }})
     needs: [resolve]
     runs-on: ${{ matrix.runs_on }}
     defaults:
@@ -93,9 +93,10 @@ jobs:
           # harness; the Android emulator image is installed and booted by
           # the harness.
           - { device: ios,     mode: debug,   runs_on: macos-latest,   python: python3 }
-          - { device: android, mode: debug,   runs_on: ubuntu-latest,  python: python3 }
-          - { device: android, mode: profile, runs_on: ubuntu-latest,  python: python3 }
-          - { device: android, mode: release, runs_on: ubuntu-latest,  python: python3 }
+          - { device: android, mode: debug,   runs_on: ubuntu-latest,  python: python3, android_language: kotlin }
+          - { device: android, mode: profile, runs_on: ubuntu-latest,  python: python3, android_language: kotlin }
+          - { device: android, mode: release, runs_on: ubuntu-latest,  python: python3, android_language: kotlin }
+          - { device: android, mode: debug,   runs_on: ubuntu-latest,  python: python3, android_language: java }
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -170,4 +171,5 @@ jobs:
         run: |
           ${{ matrix.python }} dev/smoke_test/run.py \
             --device ${{ matrix.device }} \
-            --mode ${{ matrix.mode }}
+            --mode ${{ matrix.mode }} \
+            ${{ matrix.android_language && format('--android-language {0}', matrix.android_language) || '' }}

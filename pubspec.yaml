@@ -5,6 +5,7 @@ environment:
 
 workspace:
   - examples/hello_world
+  - packages/integration_test
 
 dependencies:
   _discoveryapis_commons: 1.0.7
